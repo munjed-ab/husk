@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Landscape has about a third of the vertical room, so the clock and rows scale down and
+         the home rhythm tightens. See values-land/styles.xml for the matching paddings. -->
+    <dimen name="time_size">36sp</dimen>
+    <dimen name="date_size">16sp</dimen>
+    <dimen name="text_large">24sp</dimen>
+    <dimen name="home_app_padding_vertical">2dp</dimen>
+    <dimen name="home_media_margin_bottom">8dp</dimen>
+</resources>

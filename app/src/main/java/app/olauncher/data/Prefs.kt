@@ -16,10 +16,19 @@ class Prefs(context: Context) {
     private val USER_STATE = "USER_STATE"
     private val LOCK_MODE = "LOCK_MODE"
     private val HOME_APPS_NUM = "HOME_APPS_NUM"
+    private val SCREEN_ORIENTATION = "SCREEN_ORIENTATION"
+    private val READING_ENABLED = "READING_ENABLED"
+    private val READING_TOPICS = "READING_TOPICS"
+    private val READING_QUEUE = "READING_QUEUE"
+    private val READING_READ = "READING_READ"
+    private val READING_LAST_FETCH = "READING_LAST_FETCH"
     private val AUTO_SHOW_KEYBOARD = "AUTO_SHOW_KEYBOARD"
     private val KEYBOARD_MESSAGE = "KEYBOARD_MESSAGE"
     private val DAILY_WALLPAPER = "DAILY_WALLPAPER"
     private val DAILY_WALLPAPER_URL = "DAILY_WALLPAPER_URL"
+    private val HOME_BG_TYPE = "HOME_BG_TYPE"
+    private val HOME_BG_INDEX = "HOME_BG_INDEX"
+    private val HOME_BG_IMAGE = "HOME_BG_IMAGE"
     private val HOME_ALIGNMENT = "HOME_ALIGNMENT"
     private val HOME_BOTTOM_ALIGNMENT = "HOME_BOTTOM_ALIGNMENT"
     private val APP_LABEL_ALIGNMENT = "APP_LABEL_ALIGNMENT"
@@ -28,6 +37,7 @@ class Prefs(context: Context) {
     private val SWIPE_LEFT_ENABLED = "SWIPE_LEFT_ENABLED"
     private val SWIPE_RIGHT_ENABLED = "SWIPE_RIGHT_ENABLED"
     private val HIDDEN_APPS = "HIDDEN_APPS"
+    private val RECENT_APPS = "RECENT_APPS"
     private val HIDDEN_APPS_UPDATED = "HIDDEN_APPS_UPDATED"
     private val SHOW_HINT_COUNTER = "SHOW_HINT_COUNTER"
     private val APP_THEME = "APP_THEME"
@@ -164,6 +174,18 @@ class Prefs(context: Context) {
         get() = prefs.getInt(HOME_APPS_NUM, 4)
         set(value) = prefs.edit { putInt(HOME_APPS_NUM, value).apply() }
 
+    var homeBgType: Int
+        get() = prefs.getInt(HOME_BG_TYPE, Constants.HomeBackground.WALLPAPER)
+        set(value) = prefs.edit { putInt(HOME_BG_TYPE, value).apply() }
+
+    var homeBgIndex: Int
+        get() = prefs.getInt(HOME_BG_INDEX, 0)
+        set(value) = prefs.edit { putInt(HOME_BG_INDEX, value).apply() }
+
+    var homeBgImage: String
+        get() = prefs.getString(HOME_BG_IMAGE, "").toString()
+        set(value) = prefs.edit { putString(HOME_BG_IMAGE, value).apply() }
+
     var homeAlignment: Int
         get() = prefs.getInt(HOME_ALIGNMENT, Gravity.START)
         set(value) = prefs.edit { putInt(HOME_ALIGNMENT, value).apply() }
@@ -229,6 +251,38 @@ class Prefs(context: Context) {
         get() = prefs.getStringSet(HIDDEN_APPS, mutableSetOf()) as MutableSet<String>
         set(value) = prefs.edit { putStringSet(HIDDEN_APPS, value).apply() }
 
+    // ponytail: ordered "package|user" keys, newest first, no usage-stats permission needed.
+    // Kept as one string because SharedPreferences string sets do not preserve order.
+    var recentApps: List<String>
+        get() = prefs.getString(RECENT_APPS, "").orEmpty().split("\n").filter { it.isNotBlank() }
+        set(value) = prefs.edit { putString(RECENT_APPS, value.joinToString("\n")).apply() }
+
+    // portrait by default, which is how the launcher has always behaved on phones
+    var screenOrientation: Int
+        get() = prefs.getInt(SCREEN_ORIENTATION, Constants.Orientation.PORTRAIT)
+        set(value) = prefs.edit { putInt(SCREEN_ORIENTATION, value).apply() }
+
+    var readingEnabled: Boolean
+        get() = prefs.getBoolean(READING_ENABLED, false)
+        set(value) = prefs.edit { putBoolean(READING_ENABLED, value).apply() }
+
+    // Substack category ids as strings, see Constants.Topic
+    var readingTopics: MutableSet<String>
+        get() = prefs.getStringSet(READING_TOPICS, mutableSetOf()) as MutableSet<String>
+        set(value) = prefs.edit { putStringSet(READING_TOPICS, value).apply() }
+
+    var readingQueueJson: String
+        get() = prefs.getString(READING_QUEUE, "").orEmpty()
+        set(value) = prefs.edit { putString(READING_QUEUE, value).apply() }
+
+    var readingRead: MutableSet<String>
+        get() = prefs.getStringSet(READING_READ, mutableSetOf()) as MutableSet<String>
+        set(value) = prefs.edit { putStringSet(READING_READ, value).apply() }
+
+    var readingLastFetch: Long
+        get() = prefs.getLong(READING_LAST_FETCH, 0L)
+        set(value) = prefs.edit { putLong(READING_LAST_FETCH, value).apply() }
+
     var hiddenAppsUpdated: Boolean
         get() = prefs.getBoolean(HIDDEN_APPS_UPDATED, false)
         set(value) = prefs.edit { putBoolean(HIDDEN_APPS_UPDATED, value).apply() }
@@ -254,7 +308,7 @@ class Prefs(context: Context) {
         set(value) = prefs.edit { putLong(SHARE_SHOWN_TIME, value).apply() }
 
     var swipeDownAction: Int
-        get() = prefs.getInt(SWIPE_DOWN_ACTION, Constants.SwipeDownAction.NOTIFICATIONS)
+        get() = prefs.getInt(SWIPE_DOWN_ACTION, Constants.SwipeDownAction.DIAL)
         set(value) = prefs.edit { putInt(SWIPE_DOWN_ACTION, value).apply() }
 
     var appName1: String

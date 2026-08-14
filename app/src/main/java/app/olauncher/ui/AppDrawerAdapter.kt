@@ -20,19 +20,24 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.databinding.AdapterAppDrawerBinding
 import app.olauncher.databinding.AdapterPrivateSpaceHeaderBinding
+import app.olauncher.databinding.AdapterSectionBinding
+import app.olauncher.helper.dpToPx
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isSystemApp
+import app.olauncher.helper.setScriptTypeface
 import app.olauncher.helper.showKeyboard
 import java.text.Normalizer
 
 class AppDrawerAdapter(
     private var flag: Int,
     private val appLabelGravity: Int,
+    private val suggestionLabel: (isCall: Boolean, query: String) -> String,
     private val appClickListener: (AppModel) -> Unit,
     private val appInfoListener: (AppModel) -> Unit,
     private val appDeleteListener: (AppModel) -> Unit,
     private val appHideListener: (AppModel, Int) -> Unit,
     private val appRenameListener: (AppModel, String) -> Unit,
+    private val appShortcutsProvider: (AppModel) -> List<AppModel> = { emptyList() },
     private val privateSpaceToggleListener: () -> Unit = {},
     private val privateSpaceSettingsListener: () -> Unit = {},
 ) : ListAdapter<AppModel, RecyclerView.ViewHolder>(DIFF_CALLBACK), Filterable {
@@ -40,16 +45,26 @@ class AppDrawerAdapter(
     companion object {
         const val VIEW_TYPE_APP = 0
         const val VIEW_TYPE_PRIVATE_HEADER = 1
+        const val VIEW_TYPE_SECTION = 2
+        private const val CHILD_INDENT_DP = 20
+        private const val TITLE_PADDING_DP = 24
 
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AppModel>() {
             override fun areItemsTheSame(oldItem: AppModel, newItem: AppModel): Boolean = when {
                 oldItem is AppModel.App && newItem is AppModel.App ->
                     oldItem.appPackage == newItem.appPackage && oldItem.user == newItem.user
+                        && oldItem.isRecent == newItem.isRecent
 
                 oldItem is AppModel.PinnedShortcut && newItem is AppModel.PinnedShortcut ->
                     oldItem.shortcutId == newItem.shortcutId && oldItem.user == newItem.user
 
                 oldItem is AppModel.PrivateSpaceHeader && newItem is AppModel.PrivateSpaceHeader -> true
+
+                oldItem is AppModel.SectionHeader && newItem is AppModel.SectionHeader ->
+                    oldItem.title == newItem.title
+
+                oldItem is AppModel.Suggestion && newItem is AppModel.Suggestion ->
+                    oldItem.query == newItem.query && oldItem.isCall == newItem.isCall
 
                 else -> false
             }
@@ -73,6 +88,7 @@ class AppDrawerAdapter(
     override fun getItemViewType(position: Int): Int {
         return when (appFilteredList.getOrNull(position)) {
             is AppModel.PrivateSpaceHeader -> VIEW_TYPE_PRIVATE_HEADER
+            is AppModel.SectionHeader -> VIEW_TYPE_SECTION
             else -> VIEW_TYPE_APP
         }
     }
@@ -81,6 +97,14 @@ class AppDrawerAdapter(
         return when (viewType) {
             VIEW_TYPE_PRIVATE_HEADER -> PrivateSpaceHeaderViewHolder(
                 AdapterPrivateSpaceHeaderBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
+
+            VIEW_TYPE_SECTION -> SectionViewHolder(
+                AdapterSectionBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
                     false
@@ -110,6 +134,8 @@ class AppDrawerAdapter(
                     )
                 }
 
+                is SectionViewHolder -> holder.binding.sectionTitle.text = (appModel as AppModel.SectionHeader).title
+
                 is ViewHolder -> holder.bind(
                     flag,
                     appLabelGravity,
@@ -119,8 +145,9 @@ class AppDrawerAdapter(
                     appDeleteListener,
                     appInfoListener,
                     appHideListener,
-                    appRenameListener
-                )
+                    appRenameListener,
+                    appShortcutsProvider,
+                ) { app -> showShortcuts(app) }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -137,8 +164,14 @@ class AppDrawerAdapter(
 
                 val appFilteredList = (if (charSearch.isNullOrBlank()) appsList
                 else appsList.filter { app ->
-                    app !is AppModel.PrivateSpaceHeader && appLabelMatches(app.appLabel, charSearch)
+                    app !is AppModel.PrivateSpaceHeader && app !is AppModel.SectionHeader
+                        && (app as? AppModel.App)?.isRecent != true
+                        && appLabelMatches(app.appLabel, charSearch)
                 } as MutableList<AppModel>)
+
+                // a dead end is a wasted screen, offer the obvious next move instead
+                if (appFilteredList.isEmpty() && !charSearch.isNullOrBlank() && !isBangSearch)
+                    appFilteredList.add(suggestionFor(charSearch.trim().toString()))
 
                 val filterResults = FilterResults()
                 filterResults.values = appFilteredList
@@ -166,10 +199,23 @@ class AppDrawerAdapter(
                 && flag == Constants.FLAG_LAUNCH_APP
                 && appFilteredList.isNotEmpty()
                 && appFilteredList[0] !is AppModel.PrivateSpaceHeader
+                && appFilteredList[0] !is AppModel.SectionHeader
+                // a fallback row is a suggestion, never something to fire off mid typing
+                && appFilteredList[0] !is AppModel.Suggestion
             ) appClickListener(appFilteredList[0])
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun suggestionFor(query: String): AppModel.Suggestion {
+        val digits = query.filter { it.isDigit() }
+        val isCall = digits.length >= 3 && digits.length == query.filter { !it.isWhitespace() && it != '+' }.length
+        return AppModel.Suggestion(
+            query = query,
+            isCall = isCall,
+            appLabel = suggestionLabel(isCall, query),
+        )
     }
 
     private fun appLabelMatches(appLabel: String, charSearch: CharSequence): Boolean {
@@ -200,8 +246,26 @@ class AppDrawerAdapter(
         submitList(appsList)
     }
 
+    /** Drops the app's own shortcuts into the list directly under it, as plain rows. */
+    private fun showShortcuts(appModel: AppModel) {
+        val shortcuts = appShortcutsProvider(appModel)
+        if (shortcuts.isEmpty()) return
+        val position = appFilteredList.indexOf(appModel)
+        if (position == -1) return
+        val updated = appFilteredList.toMutableList()
+        // toggle: tapping again on an app that already listed its shortcuts removes them
+        val existing = updated.filterIsInstance<AppModel.PinnedShortcut>()
+            .filter { shortcut -> shortcuts.any { it.appLabel == shortcut.appLabel && it.appPackage == shortcut.appPackage } }
+        if (existing.isNotEmpty() && updated.getOrNull(position + 1) in existing) updated.removeAll(existing)
+        else updated.addAll(position + 1, shortcuts)
+        appFilteredList = updated
+        submitList(updated)
+    }
+
     fun launchFirstInList() {
-        val first = appFilteredList.firstOrNull { it !is AppModel.PrivateSpaceHeader }
+        val first = appFilteredList.firstOrNull {
+            it !is AppModel.PrivateSpaceHeader && it !is AppModel.SectionHeader
+        }
         if (first != null) appClickListener(first)
     }
 
@@ -221,6 +285,8 @@ class AppDrawerAdapter(
         }
     }
 
+    class SectionViewHolder(val binding: AdapterSectionBinding) : RecyclerView.ViewHolder(binding.root)
+
     class ViewHolder(private val binding: AdapterAppDrawerBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(
@@ -233,6 +299,8 @@ class AppDrawerAdapter(
             appInfoListener: (AppModel) -> Unit,
             appHideListener: (AppModel, Int) -> Unit,
             appRenameListener: (AppModel, String) -> Unit,
+            appShortcutsProvider: (AppModel) -> List<AppModel>,
+            showShortcuts: (AppModel) -> Unit,
         ) = with(binding) {
             appHideLayout.visibility = View.GONE
             renameLayout.visibility = View.GONE
@@ -243,12 +311,24 @@ class AppDrawerAdapter(
                 append(appModel.appLabel)
                 if (appModel.isNew) append(" ✦")
             }
+            appTitle.setScriptTypeface()
             appTitle.gravity = appLabelGravity
+            // a shortcut listed under its app reads as a continuation of it: dimmer, and indented
+            // on whichever side the label is anchored to
+            val isChild = appModel is AppModel.PinnedShortcut && appModel.isChild
+            appTitle.alpha = if (isChild) 0.55f else 1f
+            val indent = if (isChild) CHILD_INDENT_DP.dpToPx() else 0
+            val base = TITLE_PADDING_DP.dpToPx()
+            if (appLabelGravity == android.view.Gravity.END)
+                appTitle.setPaddingRelative(base, appTitle.paddingTop, base + indent, appTitle.paddingBottom)
+            else
+                appTitle.setPaddingRelative(base + indent, appTitle.paddingTop, base, appTitle.paddingBottom)
             otherProfileIndicator.isVisible = appModel.user != myUserHandle
 
             appTitle.setOnClickListener { clickListener(appModel) }
 
             appTitle.setOnLongClickListener {
+                if (appModel is AppModel.Suggestion) return@setOnLongClickListener true
                 if (appModel.appPackage.isNotEmpty()) {
                     appDelete.alpha = when (
                         appModel is AppModel.PinnedShortcut || !root.context.isSystemApp(appModel.appPackage, appModel.user)
@@ -268,8 +348,16 @@ class AppDrawerAdapter(
                     appHideLayout.visibility = View.VISIBLE
                     // Only allow renaming non hidden apps
                     appRename.isVisible = flag != Constants.FLAG_HIDDEN_APPS
+                    // most apps publish none, so the button only shows when there is something behind it
+                    appShortcuts.isVisible = appShortcutsProvider(appModel).isNotEmpty()
                 }
                 true
+            }
+
+            appShortcuts.setOnClickListener {
+                appHideLayout.visibility = View.GONE
+                appTitle.visibility = View.VISIBLE
+                showShortcuts(appModel)
             }
 
             // Configure rename behavior

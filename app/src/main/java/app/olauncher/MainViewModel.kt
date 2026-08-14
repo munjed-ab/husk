@@ -21,6 +21,7 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.helper.SingleLiveEvent
+import app.olauncher.helper.ReadingWorker
 import app.olauncher.helper.WallpaperWorker
 import app.olauncher.helper.formattedTimeSpent
 import app.olauncher.helper.getAppsList
@@ -65,14 +66,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // Home button for recents feature disabled
     // val showRecentApps = SingleLiveEvent<Unit?>()
 
+    private fun rememberRecentApp(appModel: AppModel.App) {
+        val key = "${appModel.appPackage}|${appModel.user}"
+        prefs.recentApps = (listOf(key) + prefs.recentApps.filterNot { it == key }).take(Constants.RECENT_APPS_COUNT)
+    }
+
     fun selectedApp(appModel: AppModel, flag: Int) {
         if (appModel is AppModel.PrivateSpaceHeader) return
         when (flag) {
             Constants.FLAG_LAUNCH_APP -> {
                 when (appModel) {
                     is AppModel.PinnedShortcut -> launchShortcut(appModel)
-                    is AppModel.App ->
+                    is AppModel.App -> {
+                        rememberRecentApp(appModel)
                         launchApp(appModel.appPackage, appModel.activityClassName, appModel.user)
+                    }
 
                     else -> {}
                 }
@@ -103,18 +111,32 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun launchShortcut(appModel: AppModel.PinnedShortcut) {
         val launcher = appContext.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+        // an app's own shortcuts are dynamic or manifest declared, matching only pinned ones meant
+        // the rows under a long pressed app did nothing at all
         val query = LauncherApps.ShortcutQuery().apply {
-            setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED)
+            setPackage(appModel.appPackage)
+            setQueryFlags(
+                LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED or
+                    LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC or
+                    LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST
+            )
         }
-        launcher.getShortcuts(query, appModel.user)?.find { it.id == appModel.shortcutId }
-            ?.let { shortcut ->
-                launcher.startShortcut(shortcut, null, null)
+        try {
+            val shortcut = launcher.getShortcuts(query, appModel.user)?.find { it.id == appModel.shortcutId }
+            if (shortcut == null) {
+                appContext.showToast(R.string.unable_to_launch_app)
+                return
             }
+            launcher.startShortcut(shortcut, null, null)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            appContext.showToast(R.string.unable_to_launch_app)
+        }
     }
 
     private fun saveHomeApp(appModel: AppModel, position: Int) {
         when (appModel) {
-            is AppModel.PrivateSpaceHeader -> return
+            is AppModel.PrivateSpaceHeader, is AppModel.SectionHeader, is AppModel.Suggestion -> return
             is AppModel.App -> {
                 when (position) {
                     1 -> {
@@ -272,7 +294,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun saveSwipeApp(appModel: AppModel, isLeft: Boolean) {
         when (appModel) {
-            is AppModel.PrivateSpaceHeader -> return
+            is AppModel.PrivateSpaceHeader, is AppModel.SectionHeader, is AppModel.Suggestion -> return
             is AppModel.App -> {
                 if (isLeft) {
                     prefs.appNameSwipeLeft = appModel.appLabel
@@ -403,6 +425,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun isOlauncherDefault() {
         isOlauncherDefault.value = isOlauncherDefault(appContext)
+    }
+
+    fun setReadingWorker() {
+        val prefs = Prefs(appContext)
+        if (!prefs.readingEnabled || prefs.readingTopics.isEmpty()) {
+            WorkManager.getInstance(appContext).cancelUniqueWork(Constants.READING_WORKER_NAME)
+            return
+        }
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+        val request = PeriodicWorkRequestBuilder<ReadingWorker>(24, TimeUnit.HOURS)
+            .setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.HOURS)
+            .setConstraints(constraints)
+            .build()
+        WorkManager
+            .getInstance(appContext)
+            .enqueueUniquePeriodicWork(
+                Constants.READING_WORKER_NAME,
+                ExistingPeriodicWorkPolicy.KEEP,
+                request
+            )
     }
 
     fun setWallpaperWorker() {

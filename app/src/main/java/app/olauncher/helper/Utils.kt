@@ -17,6 +17,7 @@ import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Point
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.UserHandle
@@ -31,6 +32,7 @@ import android.util.TypedValue
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.LinearInterpolator
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
@@ -38,6 +40,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
+import androidx.core.content.res.ResourcesCompat
 import app.olauncher.BuildConfig
 import app.olauncher.R
 import app.olauncher.data.AppModel
@@ -64,6 +67,21 @@ fun Context.showToast(message: String?, duration: Int = Toast.LENGTH_SHORT) {
 
 fun Context.showToast(stringResource: Int, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, getString(stringResource), duration).show()
+}
+
+// ponytail: pixelify_sans has no Arabic glyphs, so Arabic silently falls back to the system font
+// and looks nothing like the rest of the UI. Pick the face per string instead of merging the two
+// font files. Handjet is the Arabic face: same pixel/modular construction as pixelify_sans.
+// Call setScriptTypeface() wherever user data (contact names, app labels) is shown.
+private val arabicRegex = Regex("[\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF\\uFB50-\\uFDFF\\uFE70-\\uFEFF]")
+private var pixelFont: Typeface? = null
+private var arabicFont: Typeface? = null
+
+fun TextView.setScriptTypeface() {
+    val arabic = arabicRegex.containsMatchIn(text)
+    if (pixelFont == null) pixelFont = ResourcesCompat.getFont(context, R.font.pixelify_sans)
+    if (arabic && arabicFont == null) arabicFont = ResourcesCompat.getFont(context, R.font.handjet_arabic)
+    typeface = (if (arabic) arabicFont else pixelFont) ?: return
 }
 
 suspend fun getAppsList(
@@ -130,6 +148,37 @@ suspend fun getAppsList(
             e.printStackTrace()
         }
         appList
+    }
+}
+
+/**
+ * The app's own shortcuts ("New message", "Scan QR"), the ones a stock launcher shows on long
+ * press. Empty unless Husk is the default launcher, since only the host may query them.
+ */
+@RequiresApi(Build.VERSION_CODES.N_MR1)
+fun Context.getAppShortcuts(packageName: String, user: UserHandle): List<AppModel.PinnedShortcut> {
+    val launcherApps = getSystemService(Context.LAUNCHER_APPS_SERVICE) as? LauncherApps ?: return emptyList()
+    if (!launcherApps.hasShortcutHostPermission()) return emptyList()
+    val query = LauncherApps.ShortcutQuery().apply {
+        setPackage(packageName)
+        setQueryFlags(
+            LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC or LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST
+        )
+    }
+    return try {
+        launcherApps.getShortcuts(query, user).orEmpty().map { shortcut ->
+            AppModel.PinnedShortcut(
+                appLabel = shortcut.shortLabel?.toString() ?: shortcut.longLabel?.toString().orEmpty(),
+                key = null,
+                appPackage = shortcut.`package`,
+                shortcutId = shortcut.id,
+                user = shortcut.userHandle,
+                isChild = true,
+            )
+        }.filter { it.appLabel.isNotBlank() }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        emptyList()
     }
 }
 
@@ -457,10 +506,15 @@ fun getBackupWallpaper(wallType: String): String {
     else Constants.URL_DEFAULT_DARK_WALLPAPER
 }
 
-fun openSearch(context: Context) {
+fun openSearch(context: Context, query: String = "") {
     val intent = Intent(Intent.ACTION_WEB_SEARCH)
-    intent.putExtra(SearchManager.QUERY, "")
-    context.startActivity(intent)
+    intent.putExtra(SearchManager.QUERY, query)
+    try {
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        // no search app handles ACTION_WEB_SEARCH on some ROMs, fall back to the browser
+        context.openUrl(Constants.URL_DUCK_SEARCH + Uri.encode(query))
+    }
 }
 
 @SuppressLint("WrongConstant", "PrivateApi")
@@ -610,31 +664,6 @@ fun View.animateAlpha(alpha: Float = 1.0f) {
     }
 }
 
-fun Context.shareApp() {
-    val message = getString(R.string.are_you_using_your_phone_or_is_your_phone_using_you) +
-            "\n" + Constants.URL_OLAUNCHER_PLAY_STORE
-    val sendIntent: Intent = Intent().apply {
-        action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TEXT, message)
-        type = "text/plain"
-    }
-
-    val shareIntent = Intent.createChooser(sendIntent, null)
-    startActivity(shareIntent)
-}
-
-fun Context.rateApp() {
-    val intent = Intent(
-        Intent.ACTION_VIEW,
-        Constants.URL_OLAUNCHER_PLAY_STORE.toUri()
-    )
-    var flags = Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-    flags = flags or Intent.FLAG_ACTIVITY_NEW_DOCUMENT
-    intent.addFlags(flags)
-    startActivity(intent)
-}
-
-@RequiresApi(Build.VERSION_CODES.N_MR1)
 fun Context.deletePinnedShortcut(packageName: String, shortcutIdToDelete: String, user: UserHandle) {
     val launcherApps = getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
 

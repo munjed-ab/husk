@@ -10,21 +10,14 @@ object Constants {
     object Dialog {
         const val ABOUT = "ABOUT"
         const val WALLPAPER = "WALLPAPER"
-        const val REVIEW = "REVIEW"
-        const val RATE = "RATE"
-        const val SHARE = "SHARE"
         const val HIDDEN = "HIDDEN"
         const val KEYBOARD = "KEYBOARD"
         const val DIGITAL_WELLBEING = "DIGITAL_WELLBEING"
-        const val PRO_MESSAGE = "PRO_MESSAGE"
     }
 
     object UserState {
         const val START = "START"
         const val WALLPAPER = "WALLPAPER"
-        const val REVIEW = "REVIEW"
-        const val RATE = "RATE"
-        const val SHARE = "SHARE"
     }
 
     object DateTime {
@@ -41,9 +34,38 @@ object Constants {
         }
     }
 
+    const val RECENT_APPS_COUNT = 4
+    const val LOW_BATTERY_PERCENT = 15
+
+    // Substack category ids, from https://substack.com/api/v1/categories
+    object Topic {
+        const val TECHNOLOGY = 4
+        const val PHILOSOPHY = 114
+        const val SCIENCE = 134
+        const val BUSINESS = 62
+        const val CULTURE = 96
+        const val HEALTH = 355
+        const val LITERATURE = 339
+        const val FAITH = 223
+    }
+
+    object Orientation {
+        const val AUTO = 0
+        const val PORTRAIT = 1
+        const val LANDSCAPE = 2
+    }
+
     object SwipeDownAction {
         const val SEARCH = 1
         const val NOTIFICATIONS = 2
+        const val DIAL = 3
+    }
+
+    object HomeBackground {
+        const val WALLPAPER = 0
+        const val COLOR = 1
+        const val GRADIENT = 2
+        const val IMAGE = 3
     }
 
     object CharacterIndicator {
@@ -98,15 +120,11 @@ object Constants {
     const val URL_ABOUT_OLAUNCHER = "https://tanujnotes.substack.com/p/olauncher-minimal-af-launcher?utm_source=olauncher"
     const val URL_OLAUNCHER_PRIVACY = "https://tanujnotes.notion.site/Olauncher-Privacy-Policy-dd6ac5101ddd4b3da9d27057889d44ab"
     const val URL_DOUBLE_TAP = "https://tanujnotes.notion.site/Double-tap-to-lock-Olauncher-0f7fb103ec1f47d7a90cdfdcd7fb86ef"
-    const val URL_OLAUNCHER_GITHUB = "https://www.github.com/tanujnotes/Olauncher"
-    const val URL_OLAUNCHER_PLAY_STORE = "https://play.google.com/store/apps/details?id=app.olauncher"
-    const val URL_OLAUNCHER_PRO = "https://play.google.com/store/apps/details?id=app.prolauncher"
-    const val URL_PLAY_STORE_DEV = "https://play.google.com/store/apps/dev?id=7198807840081074933"
-    const val URL_TWITTER_TANUJ = "https://x.com/tanujnotes"
-    const val URL_INSTA_TANUJ = "https://instagram.com/tanuj_notes"
+    const val URL_GITHUB = "https://github.com/munjed-ab"
+    const val URL_SMARTSHOTS = "https://play.google.com/store/apps/details?id=com.smartshots"
+    // upstream project Husk is forked from, kept for the GPL attribution in About
+    const val URL_OLAUNCHER_GITHUB = "https://github.com/tanujnotes/Olauncher"
     const val URL_WALLPAPERS = "https://gist.githubusercontent.com/tanujnotes/85e2d0343ace71e76615ac346fbff82b/raw"
-    const val URL_NTS = "https://play.google.com/store/apps/details?id=com.makenotetoself"
-    const val URL_PENTASTIC = "https://play.google.com/store/apps/details?id=app.pentastic"
     const val URL_DEFAULT_DARK_WALLPAPER = "https://images.unsplash.com/photo-1512551980832-13df02babc9e"
     const val URL_DEFAULT_LIGHT_WALLPAPER = "https://images.unsplash.com/photo-1515549832467-8783363e19b6"
     const val URL_DUCK_SEARCH = "https://duck.co/?q="
@@ -117,4 +135,5 @@ object Constants {
     const val DIGITAL_WELLBEING_SAMSUNG_PACKAGE_NAME = "com.samsung.android.forest"
     const val DIGITAL_WELLBEING_SAMSUNG_ACTIVITY = "com.samsung.android.forest.launcher.LauncherActivity"
     const val WALLPAPER_WORKER_NAME = "WALLPAPER_WORKER_NAME"
+    const val READING_WORKER_NAME = "READING_WORKER_NAME"
 }

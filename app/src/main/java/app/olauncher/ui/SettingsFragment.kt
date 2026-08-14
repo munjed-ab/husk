@@ -14,31 +14,33 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import app.olauncher.BuildConfig
+import app.olauncher.MainActivity
 import app.olauncher.MainViewModel
 import app.olauncher.R
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentSettingsBinding
+import androidx.lifecycle.lifecycleScope
 import app.olauncher.helper.animateAlpha
 import app.olauncher.helper.appUsagePermissionGranted
 import app.olauncher.helper.getColorFromAttr
 import app.olauncher.helper.isAccessServiceEnabled
 import app.olauncher.helper.isDarkThemeOn
 import app.olauncher.helper.isEinkDisplay
-import app.olauncher.helper.isCountryIn
 import app.olauncher.helper.isOlauncherDefault
 import app.olauncher.helper.isTablet
 import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.openUrl
-import app.olauncher.helper.rateApp
+import app.olauncher.helper.refreshReadingList
+import kotlinx.coroutines.launch
 import app.olauncher.helper.setPlainWallpaper
-import app.olauncher.helper.shareApp
 import app.olauncher.helper.showToast
 import app.olauncher.listener.DeviceAdmin
 
@@ -51,8 +53,21 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
 
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
-    private val showPentastic = System.currentTimeMillis() % 2 == 0L
-    private var showInstagram = false
+
+    private val pickBackgroundImage = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@registerForActivityResult
+        try {
+            // without this the uri dies with the process and the background goes blank on reboot
+            requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+        }
+        prefs.homeBgImage = uri.toString()
+        prefs.homeBgType = Constants.HomeBackground.IMAGE
+        applyBackground()
+        if (prefs.homeBgType != Constants.HomeBackground.IMAGE)
+            requireContext().showToast(getString(R.string.unable_to_load_image))
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
@@ -72,7 +87,6 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         checkAdminPermission()
 
         binding.homeAppsNum.text = prefs.homeAppsNum.toString()
-        populateProMessage()
         populateKeyboardText()
         populateScreenTimeOnOff()
         populateLockSettings()
@@ -80,20 +94,18 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         // populateHomeButtonRecents()
         populateWallpaperText()
         populateAppThemeText()
+        populateBackgroundText()
         populateTextSize()
         populateAlignment()
         populateStatusBar()
         populateDateTime()
         populateSwipeApps()
         populateSwipeDownAction()
+        populateOrientation()
+        populateReading()
         populateActionHints()
-        showInstagram = requireContext().isCountryIn()
-        if (showInstagram) binding.twitter.text = getString(R.string.instagram)
         initClickListeners()
         initObservers()
-
-        if (showPentastic)
-            binding.footer.text = getText(R.string.new_app_minimal_todo_lists)
     }
 
     override fun onClick(view: View) {
@@ -101,6 +113,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.dateTimeSelectLayout.visibility = View.GONE
         binding.appThemeSelectLayout.visibility = View.GONE
         binding.swipeDownSelectLayout.visibility = View.GONE
+        if (view.id != R.id.orientation) binding.orientationSelectLayout.visibility = View.GONE
         if (view.id != R.id.textSizeMinus && view.id != R.id.textSizePlus) {
             if (binding.textSizesLayout.isVisible) {
                 binding.textSizesLayout.visibility = View.GONE
@@ -109,10 +122,12 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         }
         if (view.id != R.id.alignmentBottom)
             binding.alignmentSelectLayout.visibility = View.GONE
+        // stays open so a second tap cycles to the next preset
+        if (view.id != R.id.backgroundColor && view.id != R.id.backgroundGradient)
+            binding.backgroundSelectLayout.visibility = View.GONE
 
         when (view.id) {
             R.id.olauncherHiddenApps -> showHiddenApps()
-            R.id.moreFeatures -> viewModel.showDialog.postValue(Constants.Dialog.PRO_MESSAGE)
             R.id.screenTimeOnOff -> viewModel.showDialog.postValue(Constants.Dialog.DIGITAL_WELLBEING)
             R.id.appInfo -> openAppInfo(requireContext(), Process.myUserHandle(), BuildConfig.APPLICATION_ID)
             R.id.setLauncher -> viewModel.resetLauncherLiveData.call()
@@ -133,6 +148,11 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             R.id.dateTimeOn -> toggleDateTime(Constants.DateTime.ON)
             R.id.dateTimeOff -> toggleDateTime(Constants.DateTime.OFF)
             R.id.dateOnly -> toggleDateTime(Constants.DateTime.DATE_ONLY)
+            R.id.backgroundText -> binding.backgroundSelectLayout.visibility = View.VISIBLE
+            R.id.backgroundWallpaper -> updateBackground(Constants.HomeBackground.WALLPAPER)
+            R.id.backgroundColor -> updateBackground(Constants.HomeBackground.COLOR)
+            R.id.backgroundGradient -> updateBackground(Constants.HomeBackground.GRADIENT)
+            R.id.backgroundImage -> pickBackgroundImage.launch(arrayOf("image/*"))
             R.id.appThemeText -> binding.appThemeSelectLayout.visibility = View.VISIBLE
             R.id.themeLight -> updateTheme(AppCompatDelegate.MODE_NIGHT_NO)
             R.id.themeDark -> updateTheme(AppCompatDelegate.MODE_NIGHT_YES)
@@ -162,28 +182,30 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             R.id.swipeDownAction -> binding.swipeDownSelectLayout.visibility = View.VISIBLE
             R.id.notifications -> updateSwipeDownAction(Constants.SwipeDownAction.NOTIFICATIONS)
             R.id.search -> updateSwipeDownAction(Constants.SwipeDownAction.SEARCH)
+            R.id.dial -> updateSwipeDownAction(Constants.SwipeDownAction.DIAL)
+            R.id.orientation -> binding.orientationSelectLayout.visibility = View.VISIBLE
+            R.id.orientationAuto -> updateOrientation(Constants.Orientation.AUTO)
+            R.id.orientationPortrait -> updateOrientation(Constants.Orientation.PORTRAIT)
+            R.id.orientationLandscape -> updateOrientation(Constants.Orientation.LANDSCAPE)
+            R.id.readingToggle -> toggleReading()
+            R.id.readingRefresh -> refreshReading()
+            R.id.readingTechnology -> toggleTopic(Constants.Topic.TECHNOLOGY)
+            R.id.readingPhilosophy -> toggleTopic(Constants.Topic.PHILOSOPHY)
+            R.id.readingScience -> toggleTopic(Constants.Topic.SCIENCE)
+            R.id.readingBusiness -> toggleTopic(Constants.Topic.BUSINESS)
+            R.id.readingCulture -> toggleTopic(Constants.Topic.CULTURE)
+            R.id.readingHealth -> toggleTopic(Constants.Topic.HEALTH)
+            R.id.readingLiterature -> toggleTopic(Constants.Topic.LITERATURE)
+            R.id.readingFaith -> toggleTopic(Constants.Topic.FAITH)
 
             R.id.aboutOlauncher -> {
                 prefs.aboutClicked = true
                 requireContext().openUrl(Constants.URL_ABOUT_OLAUNCHER)
             }
 
-            R.id.share -> requireActivity().shareApp()
-            R.id.rate -> {
-                prefs.rateClicked = true
-                requireActivity().rateApp()
-            }
-
-            R.id.twitter -> requireContext().openUrl(
-                if (showInstagram) Constants.URL_INSTA_TANUJ else Constants.URL_TWITTER_TANUJ
-            )
-            R.id.github -> requireContext().openUrl(Constants.URL_OLAUNCHER_GITHUB)
+            R.id.github -> requireContext().openUrl(Constants.URL_GITHUB)
             R.id.privacy -> requireContext().openUrl(Constants.URL_OLAUNCHER_PRIVACY)
-            R.id.footer -> {
-                requireContext().openUrl(
-                    if (showPentastic) Constants.URL_PENTASTIC else Constants.URL_NTS
-                )
-            }
+            R.id.footer -> requireContext().openUrl(Constants.URL_SMARTSHOTS)
         }
     }
 
@@ -195,6 +217,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
                 requireContext().showToast(getString(R.string.alignment_changed))
             }
 
+            R.id.backgroundText -> updateBackground(Constants.HomeBackground.WALLPAPER)
             R.id.dailyWallpaper -> removeWallpaper()
             R.id.appThemeText -> {
                 binding.appThemeSelectLayout.visibility = View.VISIBLE
@@ -214,7 +237,6 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.appInfo.setOnClickListener(this)
         binding.setLauncher.setOnClickListener(this)
         binding.aboutOlauncher.setOnClickListener(this)
-        binding.moreFeatures.setOnClickListener(this)
         binding.autoShowKeyboard.setOnClickListener(this)
         binding.toggleLock.setOnClickListener(this)
         // Home button for recents feature disabled
@@ -238,6 +260,26 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.swipeDownAction.setOnClickListener(this)
         binding.search.setOnClickListener(this)
         binding.notifications.setOnClickListener(this)
+        binding.dial.setOnClickListener(this)
+        binding.orientation.setOnClickListener(this)
+        binding.orientationAuto.setOnClickListener(this)
+        binding.orientationPortrait.setOnClickListener(this)
+        binding.orientationLandscape.setOnClickListener(this)
+        binding.readingToggle.setOnClickListener(this)
+        binding.readingRefresh.setOnClickListener(this)
+        binding.readingTechnology.setOnClickListener(this)
+        binding.readingPhilosophy.setOnClickListener(this)
+        binding.readingScience.setOnClickListener(this)
+        binding.readingBusiness.setOnClickListener(this)
+        binding.readingCulture.setOnClickListener(this)
+        binding.readingHealth.setOnClickListener(this)
+        binding.readingLiterature.setOnClickListener(this)
+        binding.readingFaith.setOnClickListener(this)
+        binding.backgroundText.setOnClickListener(this)
+        binding.backgroundWallpaper.setOnClickListener(this)
+        binding.backgroundColor.setOnClickListener(this)
+        binding.backgroundGradient.setOnClickListener(this)
+        binding.backgroundImage.setOnClickListener(this)
         binding.appThemeText.setOnClickListener(this)
         binding.themeLight.setOnClickListener(this)
         binding.themeDark.setOnClickListener(this)
@@ -247,9 +289,6 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.closeAccessibility.setOnClickListener(this)
         binding.notWorking.setOnClickListener(this)
 
-        binding.share.setOnClickListener(this)
-        binding.rate.setOnClickListener(this)
-        binding.twitter.setOnClickListener(this)
         binding.github.setOnClickListener(this)
         binding.privacy.setOnClickListener(this)
         binding.footer.setOnClickListener(this)
@@ -270,6 +309,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.dailyWallpaper.setOnLongClickListener(this)
         binding.alignment.setOnLongClickListener(this)
         binding.appThemeText.setOnLongClickListener(this)
+        binding.backgroundText.setOnLongClickListener(this)
         binding.swipeLeftApp.setOnLongClickListener(this)
         binding.swipeRightApp.setOnLongClickListener(this)
         binding.toggleLock.setOnLongClickListener(this)
@@ -548,6 +588,32 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         }
     }
 
+    private fun populateBackgroundText() {
+        binding.backgroundText.text = when (prefs.homeBgType) {
+            Constants.HomeBackground.COLOR -> getString(R.string.color)
+            Constants.HomeBackground.GRADIENT -> getString(R.string.gradient)
+            Constants.HomeBackground.IMAGE -> getString(R.string.image)
+            else -> getString(R.string.wallpaper)
+        }
+    }
+
+    private fun updateBackground(type: Int) {
+        // same option tapped twice: step to the next preset instead of doing nothing
+        if (prefs.homeBgType == type) prefs.homeBgIndex += 1
+        else {
+            prefs.homeBgType = type
+            prefs.homeBgIndex = 0
+            if (type == Constants.HomeBackground.COLOR || type == Constants.HomeBackground.GRADIENT)
+                requireContext().showToast(getString(R.string.tap_again_for_next))
+        }
+        applyBackground()
+    }
+
+    private fun applyBackground() {
+        (activity as? MainActivity)?.refreshBackground()
+        populateBackgroundText()
+    }
+
     private fun populateTextSize() {
         val formatted = String.format("%.1f", prefs.textSizeScale)
         binding.textSizeValue.text = formatted
@@ -626,6 +692,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
     private fun populateSwipeDownAction() {
         binding.swipeDownAction.text = when (prefs.swipeDownAction) {
             Constants.SwipeDownAction.NOTIFICATIONS -> getString(R.string.notifications)
+            Constants.SwipeDownAction.DIAL -> getString(R.string.dial)
             else -> getString(R.string.search)
         }
     }
@@ -634,6 +701,75 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         if (prefs.swipeDownAction == swipeDownFor) return
         prefs.swipeDownAction = swipeDownFor
         populateSwipeDownAction()
+    }
+
+    private fun populateOrientation() {
+        binding.orientation.text = when (prefs.screenOrientation) {
+            Constants.Orientation.AUTO -> getString(R.string.auto)
+            Constants.Orientation.LANDSCAPE -> getString(R.string.landscape)
+            else -> getString(R.string.portrait)
+        }
+    }
+
+    private fun updateOrientation(orientation: Int) {
+        binding.orientationSelectLayout.visibility = View.GONE
+        if (prefs.screenOrientation == orientation) return
+        prefs.screenOrientation = orientation
+        populateOrientation()
+        // takes effect straight away rather than on next launch
+        (activity as? MainActivity)?.setupOrientation()
+    }
+
+    private fun populateReading() {
+        val on = prefs.readingEnabled
+        binding.readingToggle.text = getString(if (on) R.string.on else R.string.off)
+        // topics only matter once the feature is on, so they stay hidden until then
+        binding.readingTopicsLayout.isVisible = on
+        val chosen = prefs.readingTopics
+        topicViews().forEach { (topicId, view) ->
+            view.text = getString(if (chosen.contains(topicId.toString())) R.string.on else R.string.off)
+        }
+    }
+
+    private fun topicViews() = mapOf(
+        Constants.Topic.TECHNOLOGY to binding.readingTechnology,
+        Constants.Topic.PHILOSOPHY to binding.readingPhilosophy,
+        Constants.Topic.SCIENCE to binding.readingScience,
+        Constants.Topic.BUSINESS to binding.readingBusiness,
+        Constants.Topic.CULTURE to binding.readingCulture,
+        Constants.Topic.HEALTH to binding.readingHealth,
+        Constants.Topic.LITERATURE to binding.readingLiterature,
+        Constants.Topic.FAITH to binding.readingFaith,
+    )
+
+    private fun toggleReading() {
+        prefs.readingEnabled = !prefs.readingEnabled
+        populateReading()
+        viewModel.setReadingWorker()
+        if (prefs.readingEnabled && prefs.readingTopics.isEmpty())
+            requireContext().showToast(R.string.pick_a_topic)
+        else if (prefs.readingEnabled) refreshReading()
+    }
+
+    private fun toggleTopic(topicId: Int) {
+        val topics = prefs.readingTopics.toMutableSet()
+        if (!topics.remove(topicId.toString())) topics.add(topicId.toString())
+        prefs.readingTopics = topics
+        populateReading()
+        viewModel.setReadingWorker()
+        if (topics.isNotEmpty()) refreshReading()
+    }
+
+    private fun refreshReading() {
+        if (prefs.readingTopics.isEmpty()) {
+            requireContext().showToast(R.string.pick_a_topic)
+            return
+        }
+        requireContext().showToast(R.string.refreshing)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val count = refreshReadingList(requireContext().applicationContext)
+            if (count == 0) requireContext().showToast(R.string.nothing_to_read)
+        }
     }
 
     private fun populateSwipeApps() {
@@ -670,17 +806,8 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
     private fun populateActionHints() {
         if (prefs.aboutClicked.not())
             binding.aboutOlauncher.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_info, 0)
-        if (viewModel.isOlauncherDefault.value != true) return
-        if (prefs.rateClicked.not() && prefs.toShowHintCounter > Constants.HINT_RATE_US && prefs.toShowHintCounter < Constants.HINT_RATE_US + 100)
-            binding.rate.setCompoundDrawablesWithIntrinsicBounds(0, android.R.drawable.arrow_down_float, 0, 0)
     }
 
-    private fun populateProMessage() {
-        if (prefs.proMessageShown.not() && prefs.userState == Constants.UserState.SHARE) {
-            prefs.proMessageShown = true
-            viewModel.showDialog.postValue(Constants.Dialog.PRO_MESSAGE)
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()

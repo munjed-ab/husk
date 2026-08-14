@@ -1,44 +1,33 @@
-![Olauncher](https://repository-images.githubusercontent.com/278638069/db0acb80-661b-11eb-803e-926cae5dccb4)
+# Husk
 
+A minimal, distraction-free pixelated Android launcher.
+### Features
 
-# Olauncher | Minimal AF Launcher
-AF stands for Ad-Free! :D
+- **Home** — up to 8 apps in a two-column grid, optional clock, date and screen time
+- **Dialer** — swipe down for a searchable contact list with recent calls, search by name or number, one tap to call
+- **Music** — previous / play / next on the home screen, driving VLC (or any player exposing a media browser service)
+- **App drawer** — swipe up, type to filter, recently launched apps pinned on top
+- **Backgrounds** — wallpaper, solid colour, gradient or your own image
+- **Arabic** — full Arabic support in a matching pixel typeface
 
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-    alt="Get it on F-Droid"
-    height="80">](https://f-droid.org/packages/app.olauncher)
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-    alt="Get it on Play Store"
-    height="80">](https://play.google.com/store/apps/details?id=app.olauncher)
+### Build
 
-### Install using [F-Droid](https://f-droid.org/packages/app.olauncher), [Play Store](https://play.google.com/store/apps/details?id=app.olauncher) or the [latest APK](https://github.com/tanujnotes/Olauncher/releases/).
+```
+./gradlew assembleDebug
+```
 
-- To maintain the simplicity of the launcher, a few niche features are available but hidden.
+### Credits
 
-- Please check out the **[About](https://tanujnotes.substack.com/p/olauncher-minimal-af-launcher?utm_source=github)** page in the Olauncher settings for a complete list of features and **FAQs**.
+Husk is a fork of [Olauncher](https://github.com/tanujnotes/Olauncher) by tanujnotes, with
+substantial changes: rebranding, dialer, media controls, home grid, background options and
+Arabic typography.
 
-##
+Fonts: [Pixelify Sans](https://github.com/eifetx/Pixelify-Sans) and
+[Handjet](https://github.com/rosettatype/Handjet), both under the SIL Open Font License.
+Licence texts are in [licenses/](licenses/).
 
-License: [GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
+### Licence
 
-Contact: [X/Twitter](https://x.com/tanujnotes) • [Reddit](https://reddit.com/user/tanujnotes/) • [Bluesky](https://bsky.app/profile/tanujnotes.bsky.social)
+GPL-3.0, inherited from Olauncher. See [LICENSE](LICENSE).
 
-##
-
-### My other apps:
-
-- [Pro Launcher](https://play.google.com/store/apps/details?id=app.prolauncher) - Pro version of Olauncher with extra features like widgets, weather, folders, etc.
-
-- [Note to Self](https://play.google.com/store/apps/details?id=com.makenotetoself) - Free and [open source](https://github.com/jeerovan/ntsapp) notes app with chat like interface and end-to-end encryption.
-
-- [Pentastic](https://play.google.com/store/apps/details?id=app.pentastic) - Minimal todo lists. Free and [open source](https://github.com/tanujnotes/Pentastic).
-
-##
-
-### Help me get a new phone for testing:
-
-[<img src="https://img.buymeacoffee.com/button-api/?emoji=&slug=tanujnotes&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"
-    alt="Get it on Play Store"
-    height="80">](https://www.buymeacoffee.com/tanujnotes)
-
-Thank you!
+[github.com/munjed-ab](https://github.com/munjed-ab)

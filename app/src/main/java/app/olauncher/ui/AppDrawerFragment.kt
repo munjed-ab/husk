@@ -1,6 +1,8 @@
 package app.olauncher.ui
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Process
@@ -25,6 +27,7 @@ import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentAppDrawerBinding
 import app.olauncher.helper.deletePinnedShortcut
+import app.olauncher.helper.getAppShortcuts
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isEinkDisplay
 import app.olauncher.helper.isSystemAnimationsDisabled
@@ -150,7 +153,23 @@ class AppDrawerFragment : BaseFragment() {
         adapter = AppDrawerAdapter(
             flag,
             prefs.appLabelAlignment,
+            appShortcutsProvider = { appModel ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && appModel is AppModel.App)
+                    requireContext().getAppShortcuts(appModel.appPackage, appModel.user)
+                else emptyList()
+            },
+            suggestionLabel = { isCall, query ->
+                if (isCall) getString(R.string.call_number, query) else getString(R.string.search_online)
+            },
             appClickListener = { appModel ->
+                if (appModel is AppModel.Suggestion) {
+                    if (appModel.isCall)
+                        startActivity(Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", appModel.query, null)))
+                    else
+                        openSearch(requireContext(), appModel.query)
+                    findNavController().popBackStack(R.id.mainFragment, false)
+                    return@AppDrawerAdapter
+                }
                 viewModel.selectedApp(appModel, flag)
                 if (flag == Constants.FLAG_LAUNCH_APP || flag == Constants.FLAG_HIDDEN_APPS)
                     findNavController().popBackStack(R.id.mainFragment, false)
@@ -167,7 +186,7 @@ class AppDrawerFragment : BaseFragment() {
             },
             appDeleteListener = { appModel ->
                 when (appModel) {
-                    is AppModel.PrivateSpaceHeader -> {}
+                    is AppModel.PrivateSpaceHeader, is AppModel.SectionHeader, is AppModel.Suggestion -> {}
                     is AppModel.PinnedShortcut ->
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                             requireContext().deletePinnedShortcut(
@@ -292,7 +311,17 @@ class AppDrawerFragment : BaseFragment() {
 
     private fun updateCombinedAppList() {
         val apps = currentAppList ?: return
-        val combined = apps.toMutableList()
+        val combined = mutableListOf<AppModel>()
+
+        if (flag == Constants.FLAG_LAUNCH_APP) {
+            val recent = recentApps(apps)
+            if (recent.isNotEmpty()) {
+                combined.add(AppModel.SectionHeader(getString(R.string.recent)))
+                combined.addAll(recent)
+                combined.add(AppModel.SectionHeader(getString(R.string.all_apps)))
+            }
+        }
+        combined.addAll(apps)
 
         if (flag == Constants.FLAG_LAUNCH_APP && currentPrivateSpaceAvailable) {
             combined.add(AppModel.PrivateSpaceHeader(isLocked = currentPrivateSpaceLocked))
@@ -304,6 +333,14 @@ class AppDrawerFragment : BaseFragment() {
         adapter.setAppList(combined)
         adapter.filter.filter(binding.search.query)
     }
+
+    /** Last launched apps, newest first, resolved against the live list so uninstalls drop out. */
+    private fun recentApps(apps: List<AppModel>): List<AppModel> =
+        Prefs(requireContext()).recentApps.mapNotNull { key ->
+            apps.filterIsInstance<AppModel.App>()
+                .firstOrNull { "${it.appPackage}|${it.user}" == key && it.appPackage.isNotEmpty() }
+                ?.copy(isRecent = true)
+        }
 
     private fun initClickListeners() {
         binding.appRename.setOnClickListener {

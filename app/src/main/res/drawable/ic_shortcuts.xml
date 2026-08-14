@@ -2,6 +2,7 @@
     android:width="16dp" android:height="16dp"
     android:viewportWidth="16" android:viewportHeight="16"
     android:tint="?attr/primaryColor">
+    <!-- three stacked blocks, same 16px grid as the media icons -->
     <path android:fillColor="@android:color/white"
-        android:pathData="M6,1h4v2h-4z M2,3h12v2h-12z M3,5h2v10h-2z M11,5h2v10h-2z M5,13h6v2h-6z M6,6h1v6h-1z M9,6h1v6h-1z" />
+        android:pathData="M2,2h3v3h-3z M7,3h7v1h-7z M2,7h3v3h-3z M7,8h7v1h-7z M2,12h3v3h-3z M7,13h7v1h-7z" />
 </vector>

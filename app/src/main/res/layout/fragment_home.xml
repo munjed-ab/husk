@@ -5,65 +5,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:orientation="vertical"
     tools:context=".ui.HomeFragment">
 
-    <!-- Placeholder layout for locking screen-->
     <FrameLayout
         android:id="@+id/lock"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:contentDescription="@string/lock_layout_description" />
 
-    <!-- Home button for recents feature disabled -->
-    <!-- Placeholder layout for showing recent apps
-    <FrameLayout
-        android:id="@+id/recents"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:contentDescription="@string/recents_layout_description" /> -->
-
-    <!-- Clock and calendar-->
-    <LinearLayout
-        android:id="@+id/dateTimeLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="56dp"
-        android:orientation="vertical"
-        android:visibility="gone"
-        tools:visibility="visible">
-
-        <TextClock
-            android:id="@+id/clock"
-            style="@style/TextDefault"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-light"
-            android:format12Hour="h:mm"
-            android:textSize="@dimen/time_size"
-            tools:text="02:34" />
-
-        <TextView
-            android:id="@+id/date"
-            style="@style/TextDefault"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:format12Hour="EEE, dd MMM"
-            android:format24Hour="EEE, dd MMM"
-            android:paddingHorizontal="3dp"
-            android:textSize="@dimen/date_size"
-            tools:text="Thu, 30 Dec" />
-    </LinearLayout>
-
-    <!-- Screen time-->
+    <!-- Screen time stays a direct child of the root: HomeFragment assigns it
+         FrameLayout.LayoutParams at runtime, which a LinearLayout parent cannot take -->
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tvScreenTime"
-        style="@style/TextSmall"
+        style="@style/HomeScreenTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:layout_marginHorizontal="10dp"
         android:layout_marginTop="72dp"
         android:gravity="center"
         android:padding="10dp"
@@ -72,139 +29,327 @@
         tools:text="2h 11m"
         tools:visibility="visible" />
 
-    <!-- Home apps-->
+    <!-- Clock block and apps are siblings in one column: the clock grows when the alarm line
+         appears and the grid takes what is left, so there are no paddings to keep in sync -->
     <LinearLayout
-        android:id="@+id/homeAppsLayout"
+        android:id="@+id/homeContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:paddingHorizontal="24dp"
-        android:paddingTop="112dp"
-        android:paddingBottom="48dp">
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/homeApp1"
-            style="@style/TextLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:focusable="true"
-            android:hint="@string/app"
-            android:paddingVertical="@dimen/home_app_padding_vertical"
-            android:tag="@string/tag_1"
+        <LinearLayout
+            android:id="@+id/dateTimeLayout"
+            style="@style/HomeDateTimeLayout"
+            android:orientation="vertical"
             android:visibility="gone"
-            tools:visibility="visible" />
+            tools:visibility="visible">
 
-        <TextView
-            android:id="@+id/homeApp2"
-            style="@style/TextLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:focusable="true"
-            android:hint="@string/app"
-            android:paddingVertical="@dimen/home_app_padding_vertical"
-            android:tag="@string/tag_2"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            <TextClock
+                android:id="@+id/clock"
+                style="@style/TextDefault"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pixelify_sans"
+                android:format12Hour="h:mm"
+                android:textSize="@dimen/time_size"
+                tools:text="02:34" />
 
-        <TextView
-            android:id="@+id/homeApp3"
-            style="@style/TextLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:focusable="true"
-            android:hint="@string/app"
-            android:paddingVertical="@dimen/home_app_padding_vertical"
-            android:tag="@string/tag_3"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            <TextView
+                android:id="@+id/date"
+                style="@style/TextDefault"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:format12Hour="EEE, dd MMM"
+                android:format24Hour="EEE, dd MMM"
+                android:paddingHorizontal="3dp"
+                android:textSize="@dimen/date_size"
+                tools:text="Thu, 30 Dec" />
 
-        <TextView
-            android:id="@+id/homeApp4"
-            style="@style/TextLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:focusable="true"
-            android:hint="@string/app"
-            android:paddingVertical="@dimen/home_app_padding_vertical"
-            android:tag="@string/tag_4"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            <TextView
+                android:id="@+id/nextAlarm"
+                style="@style/TextDefault"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:alpha="0.6"
+                android:paddingHorizontal="3dp"
+                android:textSize="@dimen/date_size"
+                android:visibility="gone"
+                tools:text="alarm 06:30"
+                tools:visibility="visible" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/homeApp5"
-            style="@style/TextLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:focusable="true"
-            android:hint="@string/app"
-            android:paddingVertical="@dimen/home_app_padding_vertical"
-            android:tag="@string/tag_5"
-            android:visibility="gone"
-            tools:visibility="visible" />
+        <LinearLayout
+            android:id="@+id/homeAppsLayout"
+            style="@style/HomeAppsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/homeApp6"
-            style="@style/TextLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:focusable="true"
-            android:hint="@string/app"
-            android:paddingVertical="@dimen/home_app_padding_vertical"
-            android:tag="@string/tag_6"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            <!-- Substack article waiting to be read, see helper/Reading.kt -->
+            <TextView
+                android:id="@+id/readingLine"
+                style="@style/TextSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:alpha="0.6"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:visibility="gone"
+                tools:text="Stoic Wisdoms - The discipline of assent"
+                tools:visibility="visible" />
 
-        <TextView
-            android:id="@+id/homeApp7"
-            style="@style/TextLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:focusable="true"
-            android:hint="@string/app"
-            android:paddingVertical="@dimen/home_app_padding_vertical"
-            android:tag="@string/tag_7"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/homeApp8"
-            style="@style/TextLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:focusable="true"
-            android:hint="@string/app"
-            android:paddingVertical="@dimen/home_app_padding_vertical"
-            android:tag="@string/tag_8"
-            android:visibility="gone"
-            tools:visibility="visible" />
+                <TextView
+                    android:id="@+id/homeApp1"
+                    style="@style/TextLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:focusable="true"
+                    android:hint="@string/app"
+                    android:maxLines="1"
+                    android:paddingVertical="@dimen/home_app_padding_vertical"
+                    android:paddingEnd="8dp"
+                    android:tag="@string/tag_1"
+                    android:visibility="gone"
+                    tools:ignore="RtlSymmetry"
+                    tools:visibility="visible" />
+
+                <TextView
+                    android:id="@+id/homeApp2"
+                    style="@style/TextLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:focusable="true"
+                    android:hint="@string/app"
+                    android:maxLines="1"
+                    android:paddingVertical="@dimen/home_app_padding_vertical"
+                    android:paddingEnd="8dp"
+                    android:tag="@string/tag_2"
+                    android:visibility="gone"
+                    tools:ignore="RtlSymmetry"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/homeApp3"
+                    style="@style/TextLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:focusable="true"
+                    android:hint="@string/app"
+                    android:maxLines="1"
+                    android:paddingVertical="@dimen/home_app_padding_vertical"
+                    android:paddingEnd="8dp"
+                    android:tag="@string/tag_3"
+                    android:visibility="gone"
+                    tools:ignore="RtlSymmetry"
+                    tools:visibility="visible" />
+
+                <TextView
+                    android:id="@+id/homeApp4"
+                    style="@style/TextLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:focusable="true"
+                    android:hint="@string/app"
+                    android:maxLines="1"
+                    android:paddingVertical="@dimen/home_app_padding_vertical"
+                    android:paddingEnd="8dp"
+                    android:tag="@string/tag_4"
+                    android:visibility="gone"
+                    tools:ignore="RtlSymmetry"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/homeApp5"
+                    style="@style/TextLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:focusable="true"
+                    android:hint="@string/app"
+                    android:maxLines="1"
+                    android:paddingVertical="@dimen/home_app_padding_vertical"
+                    android:paddingEnd="8dp"
+                    android:tag="@string/tag_5"
+                    android:visibility="gone"
+                    tools:ignore="RtlSymmetry"
+                    tools:visibility="visible" />
+
+                <TextView
+                    android:id="@+id/homeApp6"
+                    style="@style/TextLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:focusable="true"
+                    android:hint="@string/app"
+                    android:maxLines="1"
+                    android:paddingVertical="@dimen/home_app_padding_vertical"
+                    android:paddingEnd="8dp"
+                    android:tag="@string/tag_6"
+                    android:visibility="gone"
+                    tools:ignore="RtlSymmetry"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/homeApp7"
+                    style="@style/TextLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:focusable="true"
+                    android:hint="@string/app"
+                    android:maxLines="1"
+                    android:paddingVertical="@dimen/home_app_padding_vertical"
+                    android:paddingEnd="8dp"
+                    android:tag="@string/tag_7"
+                    android:visibility="gone"
+                    tools:ignore="RtlSymmetry"
+                    tools:visibility="visible" />
+
+                <TextView
+                    android:id="@+id/homeApp8"
+                    style="@style/TextLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:focusable="true"
+                    android:hint="@string/app"
+                    android:maxLines="1"
+                    android:paddingVertical="@dimen/home_app_padding_vertical"
+                    android:paddingEnd="8dp"
+                    android:tag="@string/tag_8"
+                    android:visibility="gone"
+                    tools:ignore="RtlSymmetry"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
     </LinearLayout>
 
     <TextView
         android:id="@+id/firstRunTips"
-        style="@style/TextSmall"
+        style="@style/HomeTips"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginBottom="56dp"
         android:text="@string/swipe_up_for_apps"
         android:visibility="gone"
         tools:visibility="visible" />
 
-    <!-- Set default launcher -->
+    <!-- Media controls, drives VLC via its Auto browser service, see helper/MediaControl.kt -->
+    <LinearLayout
+        android:id="@+id/mediaControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="@dimen/home_media_margin_bottom"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/mediaTitle"
+            style="@style/TextSmall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:alpha="0.6"
+            android:ellipsize="end"
+            android:gravity="center_horizontal"
+            android:maxLines="1"
+            android:paddingHorizontal="24dp"
+            android:visibility="gone"
+            tools:text="Song name"
+            tools:visibility="visible" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/mediaPrev"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/media_previous"
+                android:padding="6dp"
+                android:src="@drawable/ic_media_prev" />
+
+            <ImageView
+                android:id="@+id/mediaPlay"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginHorizontal="28dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/media_play"
+                android:padding="6dp"
+                android:src="@drawable/ic_media_play" />
+
+            <ImageView
+                android:id="@+id/mediaNext"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/media_next"
+                android:padding="6dp"
+                android:src="@drawable/ic_media_next" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
     <TextView
         android:id="@+id/setDefaultLauncher"
-        style="@style/TextMedium"
+        style="@style/HomeSetDefault"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginHorizontal="20dp"
         android:layout_marginBottom="56dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:text="@string/set_as_default_launcher_u"
         android:visibility="gone" />
+
 </FrameLayout>

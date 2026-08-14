@@ -1,5 +1,6 @@
 package app.olauncher.ui
 
+import android.app.AlarmManager
 import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.Intent
@@ -8,6 +9,7 @@ import android.content.res.Configuration
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
+import android.text.format.DateFormat
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -35,12 +37,21 @@ import app.olauncher.helper.dpToPx
 import app.olauncher.helper.expandNotificationDrawer
 import app.olauncher.helper.getChangedAppTheme
 import app.olauncher.helper.getUserHandleFromString
+import app.olauncher.helper.Article
+import app.olauncher.helper.MediaControl
+import app.olauncher.helper.markArticleRead
+import app.olauncher.helper.readingQueue
+import app.olauncher.helper.refreshReadingList
 import app.olauncher.helper.isPackageInstalled
+import app.olauncher.helper.setScriptTypeface
 import app.olauncher.helper.openAlarmApp
 import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
 import app.olauncher.helper.openDialerApp
 import app.olauncher.helper.openSearch
+import app.olauncher.helper.openUrl
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import app.olauncher.helper.setPlainWallpaperByTheme
 import app.olauncher.helper.showToast
 import app.olauncher.listener.OnSwipeTouchListener
@@ -54,6 +65,9 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
     private lateinit var prefs: Prefs
     private lateinit var viewModel: MainViewModel
     private lateinit var deviceManager: DevicePolicyManager
+
+    private val mediaControl by lazy { MediaControl(requireContext().applicationContext) }
+    private var currentArticle: Article? = null
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
@@ -73,6 +87,8 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         deviceManager = context?.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
         initObservers()
+        initMediaControls()
+        initReadingLine()
         setHomeAlignment(prefs.homeAlignment)
         initSwipeTouchListener()
         initClickListeners()
@@ -80,6 +96,9 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
 
     override fun onResume() {
         super.onResume()
+        binding.mediaControls.isVisible = mediaControl.hasPlayer()
+        populateReadingLine()
+        mediaControl.connect()
         populateHomeScreen(false)
         viewModel.isOlauncherDefault()
         if (prefs.showStatusBar) showStatusBar()
@@ -267,6 +286,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         binding.homeApp6.gravity = horizontalGravity
         binding.homeApp7.gravity = horizontalGravity
         binding.homeApp8.gravity = horizontalGravity
+        binding.readingLine.gravity = horizontalGravity
     }
 
     private fun populateDateTime() {
@@ -285,6 +305,26 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
                 dateText = getString(R.string.day_battery, dateText, battery)
         }
         binding.date.text = dateText.replace(".,", ",")
+        populateNextAlarm()
+        populateBatteryState()
+    }
+
+    /** One line under the date while an alarm is set, nothing at all otherwise. */
+    private fun populateNextAlarm() {
+        val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val next = alarmManager.nextAlarmClock?.triggerTime
+        binding.nextAlarm.isVisible = next != null && prefs.dateTimeVisibility != Constants.DateTime.OFF
+        if (next == null) return
+        val time = DateFormat.getTimeFormat(requireContext()).format(Date(next))
+        binding.nextAlarm.text = getString(R.string.alarm_at, time)
+    }
+
+    /** Below the threshold the apps dim so the battery reading on the date line stands out. */
+    private fun populateBatteryState() {
+        val battery = (requireContext().getSystemService(Context.BATTERY_SERVICE) as BatteryManager)
+            .getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+        val low = battery in 1..Constants.LOW_BATTERY_PERCENT
+        binding.homeAppsLayout.alpha = if (low) 0.4f else 1f
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -406,6 +446,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
                 // Check if our shortcut still exists
                 if (shortcuts?.any { it.id == shortcutId } == true) {
                     textView.text = appName
+                    textView.setScriptTypeface()
                     return true
                 }
                 textView.text = ""
@@ -420,6 +461,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         // Regular app check
         if (isPackageInstalled(requireContext(), packageName, userString)) {
             textView.text = appName
+            textView.setScriptTypeface()
             return true
         }
         textView.text = ""
@@ -559,6 +601,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
     private fun swipeDownAction() {
         when (prefs.swipeDownAction) {
             Constants.SwipeDownAction.SEARCH -> openSearch(requireContext())
+            Constants.SwipeDownAction.DIAL -> startActivity(Intent(requireContext(), DialActivity::class.java))
             else -> expandNotificationDrawer(requireContext())
         }
     }
@@ -640,6 +683,79 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         }
     }
 
+    private fun initMediaControls() {
+        mediaControl.onTrackChanged = { title ->
+            _binding?.mediaTitle?.let {
+                it.text = title
+                it.isVisible = !title.isNullOrBlank()
+                it.setScriptTypeface()
+            }
+        }
+        mediaControl.onPlayingChanged = { playing ->
+            _binding?.mediaPlay?.setImageResource(
+                if (playing) R.drawable.ic_media_pause else R.drawable.ic_media_play
+            )
+        }
+        binding.mediaPrev.setOnClickListener { mediaControl.previous() }
+        binding.mediaPlay.setOnClickListener { mediaControl.playPause() }
+        binding.mediaNext.setOnClickListener { mediaControl.next() }
+        // long press play for a fresh random queue even when VLC already has one loaded
+        binding.mediaPlay.setOnLongClickListener {
+            if (mediaControl.isPlaying) {
+                // playing already, so the useful long press is a sleep timer
+                val minutes = mediaControl.toggleSleepTimer()
+                requireContext().showToast(
+                    if (minutes > 0) getString(R.string.sleep_timer_on, minutes)
+                    else getString(R.string.sleep_timer_off)
+                )
+            } else {
+                mediaControl.shuffleAll()
+                requireContext().showToast(R.string.shuffling_all)
+            }
+            true
+        }
+        binding.mediaTitle.setOnClickListener {
+            startActivity(requireContext().packageManager.getLaunchIntentForPackage("org.videolan.vlc") ?: return@setOnClickListener)
+        }
+    }
+
+    private fun initReadingLine() {
+        binding.readingLine.setOnClickListener {
+            val article = currentArticle ?: return@setOnClickListener
+            prefs.markArticleRead(article)
+            requireContext().openUrl(article.url)
+            populateReadingLine()
+        }
+        // long press puts it aside without opening, and tops the queue up when it runs dry
+        binding.readingLine.setOnLongClickListener {
+            val article = currentArticle ?: return@setOnLongClickListener true
+            prefs.markArticleRead(article)
+            populateReadingLine()
+            if (prefs.readingQueue().isEmpty()) {
+                requireContext().showToast(R.string.refreshing)
+                viewLifecycleOwner.lifecycleScope.launch {
+                    refreshReadingList(requireContext().applicationContext)
+                    populateReadingLine()
+                }
+            }
+            true
+        }
+    }
+
+    private fun populateReadingLine() {
+        currentArticle = if (prefs.readingEnabled) prefs.readingQueue().firstOrNull() else null
+        val article = currentArticle
+        binding.readingLine.isVisible = article != null
+        if (article == null) return
+        // landscape has no room for a second line above the grid
+        binding.readingLine.maxLines =
+            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 1 else 2
+        binding.readingLine.text =
+            if (article.publication.isBlank()) article.title
+            else getString(R.string.article_line, article.publication, article.title)
+        binding.readingLine.setScriptTypeface()
+    }
+
     private fun showLongPressToast() = requireContext().showToast(getString(R.string.long_press_to_select_app))
 
     private fun textOnClick(view: View) = onClick(view)
@@ -680,7 +796,18 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if (!prefs.lockModeOn) return
+                // lockModeOn gets flipped on by MyAccessibilityService.onServiceConnected(), so "off"
+                // here always means the permission was never granted. upstream returns silently and
+                // the user never finds out why double tap does nothing, send them to settings instead.
+                if (!prefs.lockModeOn) {
+                    requireContext().showToast(getString(R.string.please_turn_on_double_tap_to_unlock), Toast.LENGTH_LONG)
+                    try {
+                        findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                    return
+                }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                     binding.lock.performClick()
                 else
@@ -730,6 +857,10 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // unbind, otherwise VLC's playback service stays bound to a dead fragment
+        mediaControl.onPlayingChanged = null
+        mediaControl.onTrackChanged = null
+        mediaControl.disconnect()
         _binding = null
     }
 }
