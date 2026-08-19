@@ -18,6 +18,7 @@ class Prefs(context: Context) {
     private val HOME_APPS_NUM = "HOME_APPS_NUM"
     private val SCREEN_ORIENTATION = "SCREEN_ORIENTATION"
     private val READING_ENABLED = "READING_ENABLED"
+    private val NOTIFY_LINE_ENABLED = "NOTIFY_LINE_ENABLED"
     private val READING_TOPICS = "READING_TOPICS"
     private val READING_QUEUE = "READING_QUEUE"
     private val READING_READ = "READING_READ"
@@ -265,6 +266,10 @@ class Prefs(context: Context) {
     var readingEnabled: Boolean
         get() = prefs.getBoolean(READING_ENABLED, false)
         set(value) = prefs.edit { putBoolean(READING_ENABLED, value).apply() }
+
+    var notifyLineEnabled: Boolean
+        get() = prefs.getBoolean(NOTIFY_LINE_ENABLED, false)
+        set(value) = prefs.edit { putBoolean(NOTIFY_LINE_ENABLED, value).apply() }
 
     // Substack category ids as strings, see Constants.Topic
     var readingTopics: MutableSet<String>

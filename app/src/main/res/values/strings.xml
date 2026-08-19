@@ -101,6 +101,13 @@
     <string name="swipe_down_for">Swipe down for</string>
     <string name="search">Search</string>
     <string name="notifications">Notifications</string>
+    <string name="notification_line">Notification line</string>
+    <string name="clear_all">clear all</string>
+    <string name="nothing_new">nothing new</string>
+    <plurals name="notify_line">
+        <item quantity="one">%d new</item>
+        <item quantity="other">%d new</item>
+    </plurals>
     <string name="accessibility_disclosure">Please turn on Husk\'s accessibility service in your device\'s settings to enable Double tap to lock gesture.
     \n\nPlease note that this service is only used for this particular feature. Our accessibility service does not collect or share any data.</string>
     <string name="accept">Accept</string>

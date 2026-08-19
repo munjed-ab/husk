@@ -34,6 +34,7 @@ import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentHomeBinding
 import app.olauncher.helper.appUsagePermissionGranted
 import app.olauncher.helper.dpToPx
+import app.olauncher.helper.NotificationService
 import app.olauncher.helper.expandNotificationDrawer
 import app.olauncher.helper.getChangedAppTheme
 import app.olauncher.helper.getUserHandleFromString
@@ -88,6 +89,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
 
         initObservers()
         initMediaControls()
+        initNotifyLine()
         initReadingLine()
         setHomeAlignment(prefs.homeAlignment)
         initSwipeTouchListener()
@@ -287,6 +289,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         binding.homeApp7.gravity = horizontalGravity
         binding.homeApp8.gravity = horizontalGravity
         binding.readingLine.gravity = horizontalGravity
+        binding.notifyLine.gravity = horizontalGravity
     }
 
     private fun populateDateTime() {
@@ -717,6 +720,22 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         binding.mediaTitle.setOnClickListener {
             startActivity(requireContext().packageManager.getLaunchIntentForPackage("org.videolan.vlc") ?: return@setOnClickListener)
         }
+    }
+
+    private fun initNotifyLine() {
+        binding.notifyLine.setOnClickListener {
+            startActivity(Intent(requireContext(), NotificationsActivity::class.java))
+        }
+        // observe the shared list; the line appears the moment a notification arrives and clears when empty
+        NotificationService.items.observe(viewLifecycleOwner) { populateNotifyLine() }
+    }
+
+    private fun populateNotifyLine() {
+        val count = if (prefs.notifyLineEnabled) NotificationService.items.value?.size ?: 0 else 0
+        binding.notifyLine.isVisible = count > 0
+        if (count == 0) return
+        binding.notifyLine.text = resources.getQuantityString(R.plurals.notify_line, count, count)
+        binding.notifyLine.setScriptTypeface()
     }
 
     private fun initReadingLine() {

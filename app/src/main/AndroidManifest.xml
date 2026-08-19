@@ -59,6 +59,12 @@
             android:windowSoftInputMode="stateVisible" />
 
         <activity
+            android:name=".ui.NotificationsActivity"
+            android:exported="false"
+            android:label="@string/notifications"
+            android:launchMode="singleTask" />
+
+        <activity
             android:name=".helper.PinItemActivity"
             android:exported="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar">
@@ -110,6 +116,17 @@
                 android:resource="@xml/accessibility_service_config" />
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+        </service>
+
+        <!-- Default process on purpose: shares memory with the UI so NotificationService.items works -->
+        <service
+            android:name=".helper.NotificationService"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
 
