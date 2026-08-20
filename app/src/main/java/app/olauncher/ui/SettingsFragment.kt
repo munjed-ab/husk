@@ -1,9 +1,11 @@
 package app.olauncher.ui
 
+import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
 import android.os.Process
@@ -69,6 +71,11 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             requireContext().showToast(getString(R.string.unable_to_load_image))
     }
 
+    private val vpnConsent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == Activity.RESULT_OK) showBlockedApps()
+        else requireContext().showToast(getString(R.string.vpn_permission_needed))
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         return binding.root
@@ -89,6 +96,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.homeAppsNum.text = prefs.homeAppsNum.toString()
         populateKeyboardText()
         populateScreenTimeOnOff()
+        populateBlockedApps()
         populateLockSettings()
         // Home button for recents feature disabled
         // populateHomeButtonRecents()
@@ -128,6 +136,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
 
         when (view.id) {
             R.id.olauncherHiddenApps -> showHiddenApps()
+            R.id.blockedApps -> showBlockedApps()
             R.id.screenTimeOnOff -> viewModel.showDialog.postValue(Constants.Dialog.DIGITAL_WELLBEING)
             R.id.appInfo -> openAppInfo(requireContext(), Process.myUserHandle(), BuildConfig.APPLICATION_ID)
             R.id.setLauncher -> viewModel.resetLauncherLiveData.call()
@@ -243,6 +252,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         // binding.homeButtonRecents.setOnClickListener(this)
         binding.homeAppsNum.setOnClickListener(this)
         binding.screenTimeOnOff.setOnClickListener(this)
+        binding.blockedApps.setOnClickListener(this)
         binding.dailyWallpaperUrl.setOnClickListener(this)
         binding.dailyWallpaper.setOnClickListener(this)
         binding.alignment.setOnClickListener(this)
@@ -417,6 +427,25 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         findNavController().navigate(
             R.id.action_settingsFragment_to_appListFragment,
             bundleOf(Constants.Key.FLAG to Constants.FLAG_HIDDEN_APPS)
+        )
+    }
+
+    private fun populateBlockedApps() {
+        val count = prefs.blockedApps.size
+        binding.blockedApps.text =
+            if (count == 0) getString(R.string.off) else getString(R.string.blocked_apps_count, count)
+    }
+
+    private fun showBlockedApps() {
+        // consent is a one time system dialog, ask before the list so the first toggle takes effect
+        VpnService.prepare(requireContext())?.let {
+            vpnConsent.launch(it)
+            return
+        }
+        viewModel.getAppList(includeHiddenApps = true)
+        findNavController().navigate(
+            R.id.action_settingsFragment_to_appListFragment,
+            bundleOf(Constants.Key.FLAG to Constants.FLAG_BLOCKED_APPS)
         )
     }
 

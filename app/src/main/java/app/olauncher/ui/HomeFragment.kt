@@ -100,6 +100,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         populateReadingLine()
         mediaControl.connect()
         populateHomeScreen(false)
+        populateBlockerStatus()
         viewModel.isOlauncherDefault()
         if (prefs.showStatusBar) showStatusBar()
         else hideStatusBar()
@@ -114,6 +115,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
             R.id.date -> openCalendarApp()
             R.id.setDefaultLauncher -> viewModel.resetLauncherLiveData.call()
             R.id.tvScreenTime -> openScreenTimeDigitalWellbeing()
+            R.id.blockerStatus -> showAppList(Constants.FLAG_BLOCKED_APPS, includeHiddenApps = true)
 
             else -> {
                 try { // Launch app
@@ -253,6 +255,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         binding.setDefaultLauncher.setOnClickListener(this)
         binding.setDefaultLauncher.setOnLongClickListener(this)
         binding.tvScreenTime.setOnClickListener(this)
+        binding.blockerStatus.setOnClickListener(this)
         binding.tvScreenTime.setOnLongClickListener(this)
 
         // These fire only on d-pad/keyboard events; touch is consumed by ViewSwipeTouchListener
@@ -574,6 +577,14 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
             userString = prefs.appUserSwipeLeft,
             fallback = { openCameraApp(requireContext()) }
         )
+    }
+
+    /** Only on screen while something is blocked, so the home screen says the blocker is running. */
+    private fun populateBlockerStatus() {
+        val count = prefs.blockedApps.size
+        binding.blockerStatus.isVisible = count > 0
+        binding.blockerStatus.text = getString(R.string.blocked_apps_sign, count)
+        binding.blockerStatus.setScriptTypeface()
     }
 
     private fun showAppList(flag: Int, rename: Boolean = false, includeHiddenApps: Boolean = false) {

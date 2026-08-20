@@ -39,6 +39,7 @@ import app.olauncher.helper.resetLauncherViaFakeActivity
 import app.olauncher.helper.setPlainWallpaper
 import app.olauncher.helper.showLauncherSelector
 import app.olauncher.helper.showToast
+import app.olauncher.helper.syncAppBlocker
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -76,6 +77,9 @@ class MainActivity : AppCompatActivity() {
 
         navController = this.findNavController(R.id.nav_host_fragment)
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+
+        // the launcher starts at boot, so this is where blocked apps get cut off again
+        syncAppBlocker()
 
         val onBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {

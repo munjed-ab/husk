@@ -37,7 +37,11 @@ import app.olauncher.helper.openSearch
 import app.olauncher.helper.openUrl
 import app.olauncher.helper.showKeyboard
 import app.olauncher.helper.showToast
+import app.olauncher.helper.syncAppBlocker
 import app.olauncher.helper.uninstall
+
+// plain text, the pixel font has no symbol glyphs and would fall back to another face
+private const val BLOCKED_MARK = " · off"
 
 class AppDrawerFragment : BaseFragment() {
 
@@ -85,6 +89,8 @@ class AppDrawerFragment : BaseFragment() {
     private fun initViews() {
         if (flag == Constants.FLAG_HIDDEN_APPS)
             binding.search.queryHint = getString(R.string.hidden_apps)
+        else if (flag == Constants.FLAG_BLOCKED_APPS)
+            binding.search.queryHint = getString(R.string.block_internet)
         else if (flag in Constants.FLAG_SET_HOME_APP_1..Constants.FLAG_SET_CALENDAR_APP)
             binding.search.queryHint = "Please select an app"
         try {
@@ -168,6 +174,10 @@ class AppDrawerFragment : BaseFragment() {
                     else
                         openSearch(requireContext(), appModel.query)
                     findNavController().popBackStack(R.id.mainFragment, false)
+                    return@AppDrawerAdapter
+                }
+                if (flag == Constants.FLAG_BLOCKED_APPS) {
+                    toggleInternetBlock(appModel)
                     return@AppDrawerAdapter
                 }
                 viewModel.selectedApp(appModel, flag)
@@ -321,7 +331,20 @@ class AppDrawerFragment : BaseFragment() {
                 combined.add(AppModel.SectionHeader(getString(R.string.all_apps)))
             }
         }
-        combined.addAll(apps)
+        if (flag == Constants.FLAG_BLOCKED_APPS) {
+            // blocked apps first, so what is picked is the first thing seen and a tap takes it off
+            val blocked = prefs.blockedApps
+            val (picked, rest) = apps.partition { it.appPackage in blocked }
+            if (picked.isNotEmpty()) {
+                combined.add(AppModel.SectionHeader(getString(R.string.blocked)))
+                // the mark is a suffix so typing the app name still matches
+                combined.addAll(picked.map {
+                    if (it is AppModel.App) it.copy(appLabel = it.appLabel + BLOCKED_MARK) else it
+                })
+                combined.add(AppModel.SectionHeader(getString(R.string.all_apps)))
+            }
+            combined.addAll(rest)
+        } else combined.addAll(apps)
 
         if (flag == Constants.FLAG_LAUNCH_APP && currentPrivateSpaceAvailable) {
             combined.add(AppModel.PrivateSpaceHeader(isLocked = currentPrivateSpaceLocked))
@@ -332,6 +355,24 @@ class AppDrawerFragment : BaseFragment() {
 
         adapter.setAppList(combined)
         adapter.filter.filter(binding.search.query)
+    }
+
+    /** Blocks or unblocks the app's internet, keeping the list open so several can be toggled. */
+    private fun toggleInternetBlock(appModel: AppModel) {
+        if (appModel.appPackage.isEmpty()) return
+        // a copy: SharedPreferences hands back its own set instance, editing it in place is undefined
+        val blocked = prefs.blockedApps.toMutableSet()
+        val block = appModel.appPackage !in blocked
+        if (block) blocked.add(appModel.appPackage) else blocked.remove(appModel.appPackage)
+        prefs.blockedApps = blocked
+        requireContext().syncAppBlocker()
+        requireContext().showToast(
+            getString(
+                if (block) R.string.internet_blocked else R.string.internet_unblocked,
+                appModel.appLabel.removeSuffix(BLOCKED_MARK)
+            )
+        )
+        updateCombinedAppList()
     }
 
     /** Last launched apps, newest first, resolved against the live list so uninstalls drop out. */

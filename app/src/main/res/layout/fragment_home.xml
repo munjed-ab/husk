@@ -29,6 +29,21 @@
         tools:text="2h 11m"
         tools:visibility="visible" />
 
+    <!-- Blocker sign: only there while apps are cut off, a tap opens the picker -->
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/blockerStatus"
+        style="@style/HomeScreenTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginTop="72dp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:textSize="@dimen/date_size"
+        android:visibility="gone"
+        tools:text="3 offline"
+        tools:visibility="visible" />
+
     <!-- Clock block and apps are siblings in one column: the clock grows when the alarm line
          appears and the grid takes what is left, so there are no paddings to keep in sync -->
     <LinearLayout
