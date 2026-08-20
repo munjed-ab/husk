@@ -28,6 +28,17 @@
     <string name="swipe_down_for">اسحب لأسفل من أجل</string>
     <string name="search">يبحث</string>
     <string name="notifications">إشعارات</string>
+    <string name="notification_line">سطر الإشعارات</string>
+    <string name="clear_all">مسح الكل</string>
+    <string name="nothing_new">لا جديد</string>
+    <plurals name="notify_line">
+        <item quantity="zero">%d جديد</item>
+        <item quantity="one">إشعار جديد</item>
+        <item quantity="two">إشعاران جديدان</item>
+        <item quantity="few">%d إشعارات جديدة</item>
+        <item quantity="many">%d إشعارًا جديدًا</item>
+        <item quantity="other">%d جديد</item>
+    </plurals>
     <string name="accessibility_disclosure">يرجى تشغيل خدمة الوصول في Olauncher في إعدادات جهازك لتمكين إيماءة النقر المزدوج للقفل أو زر الشاشة الرئيسية لعرض التطبيقات الأخيرة.
     \n\nيرجى ملاحظة أن هذه الخدمة تُستخدم فقط لهذه الإيماءات. خدمة الوصول لدينا لا تجمع أو تشارك أي بيانات.</string>
     <string name="accept">يقبل</string>

@@ -34,6 +34,7 @@ import app.olauncher.helper.animateAlpha
 import app.olauncher.helper.appUsagePermissionGranted
 import app.olauncher.helper.getColorFromAttr
 import app.olauncher.helper.isAccessServiceEnabled
+import app.olauncher.helper.isNotificationAccessGranted
 import app.olauncher.helper.isDarkThemeOn
 import app.olauncher.helper.isEinkDisplay
 import app.olauncher.helper.isOlauncherDefault
@@ -111,6 +112,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         populateSwipeDownAction()
         populateOrientation()
         populateReading()
+        populateNotifyLine()
         populateActionHints()
         initClickListeners()
         initObservers()
@@ -196,6 +198,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             R.id.orientationAuto -> updateOrientation(Constants.Orientation.AUTO)
             R.id.orientationPortrait -> updateOrientation(Constants.Orientation.PORTRAIT)
             R.id.orientationLandscape -> updateOrientation(Constants.Orientation.LANDSCAPE)
+            R.id.notifyLineToggle -> toggleNotifyLine()
             R.id.readingToggle -> toggleReading()
             R.id.readingRefresh -> refreshReading()
             R.id.readingTechnology -> toggleTopic(Constants.Topic.TECHNOLOGY)
@@ -275,6 +278,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.orientationAuto.setOnClickListener(this)
         binding.orientationPortrait.setOnClickListener(this)
         binding.orientationLandscape.setOnClickListener(this)
+        binding.notifyLineToggle.setOnClickListener(this)
         binding.readingToggle.setOnClickListener(this)
         binding.readingRefresh.setOnClickListener(this)
         binding.readingTechnology.setOnClickListener(this)
@@ -747,6 +751,24 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         populateOrientation()
         // takes effect straight away rather than on next launch
         (activity as? MainActivity)?.setupOrientation()
+    }
+
+    private fun populateNotifyLine() {
+        binding.notifyLineToggle.text = getString(if (prefs.notifyLineEnabled) R.string.on else R.string.off)
+    }
+
+    private fun toggleNotifyLine() {
+        // reading notifications needs system-granted access; send the user there the first time on
+        if (!prefs.notifyLineEnabled && !isNotificationAccessGranted(requireContext())) {
+            try {
+                startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            } catch (e: Exception) {
+                requireContext().showToast(R.string.app_not_found)
+                return
+            }
+        }
+        prefs.notifyLineEnabled = !prefs.notifyLineEnabled
+        populateNotifyLine()
     }
 
     private fun populateReading() {
