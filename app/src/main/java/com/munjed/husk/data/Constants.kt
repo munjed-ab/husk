@@ -118,8 +118,6 @@ object Constants {
     const val URL_PRIVACY = "https://github.com/munjed-ab/husk/blob/master/PRIVACY.md"
     const val URL_DOUBLE_TAP = "https://github.com/munjed-ab/husk#double-tap-to-lock-does-nothing"
     const val URL_GITHUB = "https://github.com/munjed-ab/husk"
-    // upstream project Husk is forked from, kept for the GPL attribution in About
-    const val URL_UPSTREAM = "https://github.com/tanujnotes/Olauncher"
     const val URL_DUCK_SEARCH = "https://duck.co/?q="
 
     const val DIGITAL_WELLBEING_PACKAGE_NAME = "com.google.android.apps.wellbeing"
