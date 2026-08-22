@@ -22,7 +22,6 @@ import com.munjed.husk.data.Constants
 import com.munjed.husk.data.Prefs
 import com.munjed.husk.helper.SingleLiveEvent
 import com.munjed.husk.helper.ReadingWorker
-import com.munjed.husk.helper.WallpaperWorker
 import com.munjed.husk.helper.formattedTimeSpent
 import com.munjed.husk.helper.getAppsList
 import com.munjed.husk.helper.getPrivateSpaceApps
@@ -447,29 +446,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 ExistingPeriodicWorkPolicy.KEEP,
                 request
             )
-    }
-
-    fun setWallpaperWorker() {
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-        val uploadWorkRequest = PeriodicWorkRequestBuilder<WallpaperWorker>(4, TimeUnit.HOURS)
-            .setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.HOURS)
-            .setConstraints(constraints)
-            .build()
-        WorkManager
-            .getInstance(appContext)
-            .enqueueUniquePeriodicWork(
-                Constants.WALLPAPER_WORKER_NAME,
-                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                uploadWorkRequest
-            )
-    }
-
-    fun cancelWallpaperWorker() {
-        WorkManager.getInstance(appContext).cancelUniqueWork(Constants.WALLPAPER_WORKER_NAME)
-        prefs.dailyWallpaperUrl = ""
-        prefs.dailyWallpaper = false
     }
 
     fun updateHomeAlignment(gravity: Int) {

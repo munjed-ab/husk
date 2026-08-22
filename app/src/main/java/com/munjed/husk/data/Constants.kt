@@ -9,7 +9,6 @@ object Constants {
 
     object Dialog {
         const val ABOUT = "ABOUT"
-        const val WALLPAPER = "WALLPAPER"
         const val HIDDEN = "HIDDEN"
         const val KEYBOARD = "KEYBOARD"
         const val DIGITAL_WELLBEING = "DIGITAL_WELLBEING"
@@ -17,7 +16,6 @@ object Constants {
 
     object UserState {
         const val START = "START"
-        const val WALLPAPER = "WALLPAPER"
     }
 
     object DateTime {
@@ -80,8 +78,6 @@ object Constants {
         "com.miui.clock", //Xiaomi Clock
     )
 
-    const val WALL_TYPE_LIGHT = "light"
-    const val WALL_TYPE_DARK = "dark"
 
 //    const val THEME_MODE_DARK = 0
 //    const val THEME_MODE_LIGHT = 1
@@ -118,23 +114,17 @@ object Constants {
 
     const val MIN_ANIM_REFRESH_RATE = 30f
 
-    const val URL_ABOUT = "https://tanujnotes.substack.com/p/olauncher-minimal-af-launcher?utm_source=olauncher"
-    const val URL_PRIVACY = "https://tanujnotes.notion.site/Olauncher-Privacy-Policy-dd6ac5101ddd4b3da9d27057889d44ab"
-    const val URL_DOUBLE_TAP = "https://tanujnotes.notion.site/Double-tap-to-lock-Olauncher-0f7fb103ec1f47d7a90cdfdcd7fb86ef"
-    const val URL_GITHUB = "https://github.com/munjed-ab"
-    const val URL_SMARTSHOTS = "https://play.google.com/store/apps/details?id=com.smartshots"
+    const val URL_ABOUT = "https://github.com/munjed-ab/husk#features"
+    const val URL_PRIVACY = "https://github.com/munjed-ab/husk/blob/master/PRIVACY.md"
+    const val URL_DOUBLE_TAP = "https://github.com/munjed-ab/husk#double-tap-to-lock-does-nothing"
+    const val URL_GITHUB = "https://github.com/munjed-ab/husk"
     // upstream project Husk is forked from, kept for the GPL attribution in About
     const val URL_UPSTREAM = "https://github.com/tanujnotes/Olauncher"
-    const val URL_WALLPAPERS = "https://gist.githubusercontent.com/tanujnotes/85e2d0343ace71e76615ac346fbff82b/raw"
-    const val URL_DEFAULT_DARK_WALLPAPER = "https://images.unsplash.com/photo-1512551980832-13df02babc9e"
-    const val URL_DEFAULT_LIGHT_WALLPAPER = "https://images.unsplash.com/photo-1515549832467-8783363e19b6"
     const val URL_DUCK_SEARCH = "https://duck.co/?q="
-    const val URL_DIGITAL_WELLBEING_LEARN_MORE = "https://tanujnotes.substack.com/p/digital-wellbeing-app-on-android?utm_source=olauncher"
 
     const val DIGITAL_WELLBEING_PACKAGE_NAME = "com.google.android.apps.wellbeing"
     const val DIGITAL_WELLBEING_ACTIVITY = "com.google.android.apps.wellbeing.settings.TopLevelSettingsActivity"
     const val DIGITAL_WELLBEING_SAMSUNG_PACKAGE_NAME = "com.samsung.android.forest"
     const val DIGITAL_WELLBEING_SAMSUNG_ACTIVITY = "com.samsung.android.forest.launcher.LauncherActivity"
-    const val WALLPAPER_WORKER_NAME = "WALLPAPER_WORKER_NAME"
     const val READING_WORKER_NAME = "READING_WORKER_NAME"
 }

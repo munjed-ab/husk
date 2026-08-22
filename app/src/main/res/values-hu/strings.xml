@@ -23,7 +23,6 @@
     <string name="donate">Adományozás</string>
     <string name="swipe_up_for_apps">1. Simítson felfelé az összes alkalmazás megjelenítéséhez\n2. Nyomja meg hosszan bármelyik ponton a beállításokhoz</string>
     <string name="apps_on_home_screen">Alkalmazások a kezdőképernyőn</string>
-    <string name="daily_wallpaper_update">Naponta új háttérkép</string>
     <string name="left">Bal</string>
     <string name="right">Jobb</string>
     <string name="center">Közép</string>
@@ -55,8 +54,6 @@
     <string name="light">Világos</string>
     <string name="welcome_to_settings">Üdvözöljük a beállításokban!
         \n\nNe feledje, ha bármilyen kérdése van, az „Rólunk” oldalunk tartalmazza a választ.</string>
-    <string name="rate_us_message">Üdv, ezt az üzenetet nem fogja újra látni.
-        \n\nHa tetszik az Husk, kérjük, adjon nekünk 5 csillagos értékelést! Ez segít javítani a helyezésünket, és nagyon boldoggá tesz minket. Köszönjük!</string>
     <string name="share_message">A segítségére van szükségünk! Tavaly átléptük az egymillió letöltést. Idén egy millióval többet szeretnénk elérni, de egyedül nem tudjuk megtenni.
         \n\nAz Husk-nek emberekre van szüksége, az embereknek pedig az Husk-re. Köszönettel vennénk, ha megosztaná másokkal is az Huskt!</string>
     <!--    <string name="share_message">Az Ön havi emlékeztetője - használja Ön a telefonját, és ne a telefonja Önt! Csak így tovább! Nagyszerűen csinálja!-->
@@ -69,8 +66,6 @@
         \n\nMegjegyzés: Nem gyűjtünk alkalmazás-használati adatokat. Minden az Ön eszközén kerül feldolgozásra.</string>
     <string name="pro_message">Az Husk-nek van egy pro verziója is, amely Pro Launcher néven ismert. További funkciókat kínál, mint például időjárás, widgetek, betűtípusok, mappák, AMOLED háttérképek stb.
         \n\nEz a legjobb módja annak, hogy támogassa az Husk fejlesztőit. Tekintse meg őket!</string>
-    <string name="wallpaper_message">Az Husk minden nap gyönyörű, új háttérképeket kínál, amelyekkel frissen tarthatja kezdőképernyőjét, ingyen!
-        \n\nSzeretné kipróbálni?</string>
     <string name="accessibility_service_description">A hozzáférhetőségi engedély szükséges a dupla koppintás általi zároláshoz és a kezdőgomb megnyomásával a legutóbbi alkalmazások megjelenítéséhez. Az Husk által ezen a szolgáltatáson keresztül megszerzett adatok nem hagyják el a készüléket.</string>
     <string name="support_husk_for_free">Támogasson minket ingyenesen az Amazon affiliate linkünk használatával.</string>
     <string name="support_husk_message">Minden alkalommal, amikor vásárol valamit a linkünket használva, egy kis jutalékot kapunk. Kérjük, mentse el a linket, és használja fel, amikor csak online vásárol.
@@ -120,7 +115,6 @@
     <string name="swipe_right_app_enabled">Jobbra simítva indítható alkalmazás engedélyezve</string>
     <string name="swipe_left_app_disabled">Balra simítva indítható alkalmazás letiltva</string>
     <string name="swipe_right_app_disabled">Jobbra simítva indítható alkalmazás letiltva</string>
-    <string name="your_wallpaper_will_update_shortly">A háttérkép hamarosan frissülni fog</string>
     <string name="husk_is_not_default_launcher">Az Husk nem az alapértelmezett indító.\nA napi háttérkép frissítés sikertelen lehet.</string>
     <string name="long_press_to_enable">Hosszan nyomva tartás az engedélyezéshez</string>
     <string name="no_hidden_apps">Nincsenek rejtett alkalmazások</string>
@@ -131,7 +125,6 @@
     <string name="about_husk">Az Husk-ről</string>
     <string name="screen_time">Képernyőidő</string>
     <string name="learn_more">Tudjon meg többet</string>
-    <string name="did_you_know">Tudta?</string>
     <string name="leave_a_review">Hagyjon véleményt</string>
     <string name="review_message">Az Husk teljesen ingyenes és mindig is az lesz. Nincsenek hirdetései, nem gyűjt adatokat, és segít csökkenteni a képernyő előtt töltött időt egy egészségesebb digitális élet végett.
         \n\nÚgy gondoljuk, hogy egy minimális indítóra váltás kiváló döntés, és reméljük, hogy élvezni fogja. Ossza meg másokkal is tapasztalatait!</string>

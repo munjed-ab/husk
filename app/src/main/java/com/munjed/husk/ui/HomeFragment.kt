@@ -53,7 +53,6 @@ import com.munjed.husk.helper.openSearch
 import com.munjed.husk.helper.openUrl
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
-import com.munjed.husk.helper.setPlainWallpaperByTheme
 import com.munjed.husk.helper.showToast
 import com.munjed.husk.listener.OnSwipeTouchListener
 import com.munjed.husk.listener.ViewSwipeTouchListener
@@ -208,10 +207,6 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         }
         viewModel.isHuskDefault.observe(viewLifecycleOwner, Observer {
             if (it != true) {
-                if (prefs.dailyWallpaper && prefs.appTheme == AppCompatDelegate.MODE_NIGHT_YES) {
-                    prefs.dailyWallpaper = false
-                    viewModel.cancelWallpaperWorker()
-                }
                 prefs.homeBottomAlignment = false
                 setHomeAlignment()
             }
@@ -653,17 +648,6 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
                 systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE or View.SYSTEM_UI_FLAG_FULLSCREEN
             }
         }
-    }
-
-    private fun changeAppTheme() {
-        if (prefs.dailyWallpaper.not()) return
-        val changedAppTheme = getChangedAppTheme(requireContext(), prefs.appTheme)
-        prefs.appTheme = changedAppTheme
-        if (prefs.dailyWallpaper) {
-            setPlainWallpaperByTheme(requireContext(), changedAppTheme)
-            viewModel.setWallpaperWorker()
-        }
-        requireActivity().recreate()
     }
 
     private fun openScreenTimeDigitalWellbeing() {

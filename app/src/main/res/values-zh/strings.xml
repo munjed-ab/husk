@@ -8,7 +8,6 @@
     <string name="okay">好的</string>
     <string name="cool">非常棒！</string>
     <string name="tip_start_typing_for_rename">提示：开始输入应用程序重命名选项</string>
-    <string name="your_wallpaper_will_update_shortly">您的壁纸即将更新</string>
     <string name="husk_is_not_default_launcher">Husk 不是默认启动器。 每日壁纸更新可能会失败。</string>
     <string name="long_press_to_enable">长按即可启用</string>
     <string name="no_hidden_apps">没有隐藏的应用程序</string>
@@ -61,7 +60,6 @@
     <string name="donate">捐赠</string>
     <string name="swipe_up_for_apps">1. 向上滑动查看所有应用\n2.长按任意位置进行设置</string>
     <string name="apps_on_home_screen">主屏幕上的应用程序</string>
-    <string name="daily_wallpaper_update">每日新壁纸</string>
     <string name="left">左对齐</string>
     <string name="right">右对齐</string>
     <string name="center">居中</string>
@@ -90,8 +88,6 @@
     <string name="light">光</string>
     <string name="welcome_to_settings">欢迎来到设置！
         \n\n请记住，如果您有任何问题，我们的“关于”页面有答案。</string>
-    <string name="rate_us_message">您好，您不会再看到此消息。
-        \n\n如果您喜欢 Husk，能给我们一个 5 星评价吗？ 它帮助我们提高排名并使我们高兴。 谢谢你！</string>
     <string name="share_message">你好，我们需要你的帮助！去年我们的下载量突破了一百万次。今年我们希望再增加一百万，但我们无法单独做到这一点。
         \n\n您能与您的朋友分享 Husk 吗？谢谢您，祝您有美好的一天！</string>
     <string name="keyboard_message">您好，键盘是在 Husk 中查找和启动应用程序的最快方式。我们可以要求您再保留几天?
@@ -102,8 +98,6 @@
         \n\n注意：不收集应用程序使用数据。所有数据都在您的设备上处理。</string>
     <string name="pro_message">Husk 还有一个名为 Pro Launcher 的专业版。它具有额外的功能，如天气、部件、字体、文件夹、AMOLED 壁纸等。
         \n\n这也是支持 Husk 开发者的最佳方式。快来看看吧！</string>
-    <string name="wallpaper_message">Husk每天提供美丽的新壁纸。让你的主屏幕每天焕然一新，免费！
-        \n\n想试试吗？</string>
     <string name="accessibility_service_description">需要无障碍权限才能启用双击锁屏和主页键显示最近应用。Husk 通过此服务获取的任何数据都不会离开您的设备。</string>
     <string name="support_husk_for_free">使用我们的亚马逊附属链接免费支持 Husk。</string>
     <string name="support_husk_message">每次您使用我们的链接购买商品时，我们都会获得少量佣金。请保存链接并在网上购物时使用它。 谢谢！</string>
@@ -130,7 +124,6 @@
     <string name="about_husk">关于 Husk</string>
     <string name="learn_more">了解更多</string>
     <string name="screen_time">屏幕时间</string>
-    <string name="did_you_know">你可知道？</string>
     <string name="leave_a_review">发表评论</string>
     <string name="review_message">Husk 现在并且永远是完全免费的。它没有广告。它不收集任何数据。最重要的是，它可以帮助您减少屏幕时间并过上更健康的数字生活。
         \n\n我们相信切换到最小启动器是一个很好的决定。虽然我们显然有偏见，但我们希望您喜欢这次体验。请随时与我们分享您的想法！</string>

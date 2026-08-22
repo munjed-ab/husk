@@ -22,7 +22,6 @@
     <string name="donate">תרומה</string>
     <string name="swipe_up_for_apps">1. החלקה כלפי מעלה תפתח את הרשימה של כל היישומים\n2. לפתיחת הגדרות מסך הבית יש ללחוץ לחיצה ארוכה מכל מקום על גבי המסך.</string>
     <string name="apps_on_home_screen">יישומים במסך הבית</string>
-    <string name="daily_wallpaper_update">רקע חדש בכל יום</string>
     <string name="left">ימין</string>
     <string name="right">שמאל</string>
     <string name="center">מרכז</string>
@@ -54,13 +53,10 @@
     <string name="light">בהירה</string>
     <string name="welcome_to_settings">למטה מופיע קישור לעמוד "מידע כללי", ובו אפשר למצוא תשובות לכל השאלות. לא לשכוח :)
         \n\nThank you.</string>
-    <string name="rate_us_message">היי, לא נציג לך הודעה זו בשנית.
-        \n\nאם כיף לך להשתמש ב־Husk, האם נוכל בבקשה לקבל ממך דירוג של 5 כוכבים? זה יעזור לנו להתקדם בדירוג ויעשה לנו טוב על הלב. תודה מראש!</string>
     <string name="share_message">שלום, יש לנו משימה ענקית! אנחנו רוצים להגיע למיליון הורדות לפני סוף שנת 2023, ואנו זקוקים לעזרתך.
         \n\nהיית רוצה אולי לספר לחברים שלך על Husk? זה יכול לסייע לנו מאוד. תודה רבה!</string>
     <string name="keyboard_message">היי, יותר מהיר למצוא ולפתוח יישומים ב־Husk בעזרת ההקלדה. אולי בכל זאת היית רוצה להשאיר את ההגדרה הזאת ולתת לה עוד הזדמנות?
         \n\nThe choice is always yours.</string>
-    <string name="wallpaper_message">Husk מציע טפטים חדשים ויפים מדי יום. תנו למסך הבית שלכם מראה חדש ורענן בכל יום, בחינם! רוצים לנסות?</string>
     <string name="accessibility_service_description">הרשאת הנגישות נחוצה להפעלת הנעילה בהקשה כפולה ולחצן הבית להצגת אפליקציות אחרונות. כל הנתונים שייאספו על ידי Husk דרך השירות הזה לא יועברו הלאה ממכשירך.</string>
     <string name="support_husk_for_free">אפשר לתמוך ב־Husk מבלי לשלם שקל, בעזרת שימוש בקישור ה־Amazon affiliate שלנו.</string>
     <string name="support_husk_message">על כל רכישה שתבוצע דרך הקישור שלנו אנחנו נקבל עמלה קטנה. נשמח אם תשמרו את הקישור ותשתמשו בו בקניות מהאינטרנט.\nתודה רבה!</string>
@@ -108,7 +104,6 @@
     <string name="swipe_right_app_enabled">פתיחת היישום בהחלקה ימינה מופעלת</string>
     <string name="swipe_left_app_disabled">פתיחת היישום בהחלקה שמאלה כבויה</string>
     <string name="swipe_right_app_disabled">פתיחת היישום בהחלקה ימינה כבויה</string>
-    <string name="your_wallpaper_will_update_shortly">הרקע שלך תכף יתעדכן</string>
     <string name="husk_is_not_default_launcher">יישום Husk לא מוגדר בתור ברירת מחדל.\nייתכן שעדכון הרקע היומי לא יצליח.</string>
     <string name="long_press_to_enable">לחיצה ארוכה להפעלה</string>
     <string name="no_hidden_apps">אין יישומים מוסתרים</string>
@@ -124,7 +119,6 @@
     <string name="about_husk">אודות ושאלות נפוצות</string>
     <string name="screen_time">זמן מסך</string>
     <string name="learn_more">למדו עוד</string>
-    <string name="did_you_know">האם ידעת?</string>
     <string name="leave_a_review">השאירו ביקורת</string>
     <string name="review_message">‏Husk חינמית ותמיד תהיה. אין בה פרסומות, היא אינה אוספת נתונים, והיא מפחיתה את זמן המסך שלכם – מה שמוביל לחיים בריאים יותר.</string>
     <string name="alignment_changed">היישור השתנה ✅</string>

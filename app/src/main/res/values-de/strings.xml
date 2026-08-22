@@ -17,7 +17,6 @@
     <string name="okay">Okay</string>
     <string name="cool">Cool!</string>
     <string name="tip_start_typing_for_rename">Tipp: Beginnen Sie mit der Eingabe der Option „App RENAME“.</string>
-    <string name="your_wallpaper_will_update_shortly">Ihr Hintergrundbild wird in Kürze aktualisiert</string>
     <string name="husk_is_not_default_launcher">Husk ist kein Standard-Launcher. Die tägliche Aktualisierung des Hintergrundbilds schlägt möglicherweise fehl.</string>
     <string name="long_press_to_enable">Zum Aktivieren lange drücken</string>
     <string name="no_hidden_apps">Keine versteckten Apps</string>
@@ -69,7 +68,6 @@
     <string name="donate">Spenden</string>
     <string name="swipe_up_for_apps">1. Für alle Apps nach oben wischen\n2. Drücken Sie lange auf eine beliebige Stelle, um Einstellungen vorzunehmen</string>
     <string name="apps_on_home_screen">Apps auf dem Startbildschirm</string>
-    <string name="daily_wallpaper_update">Täglich neue Hintergrundbilder</string>
     <string name="left">Links</string>
     <string name="right">Rechts</string>
     <string name="center">Mitte</string>
@@ -89,8 +87,6 @@
     <string name="light">Hell</string>
     <string name="welcome_to_settings">Willkommen in den Einstellungen!
         \n\nDenken Sie daran, wenn Sie Fragen haben, unsere Seite „Über“ hat die Antwort.</string>
-    <string name="rate_us_message">Hallo, diese Nachricht wird Ihnen nicht mehr angezeigt.
-        \n\nWenn Ihnen Husk gefällt, können Sie uns bitte eine 5-Sterne-Bewertung geben? Es hilft uns, unser Ranking zu verbessern und macht uns glücklich. Dan­ke­schön!</string>
     <string name="share_message">Hallo, wir brauchen deine Hilfe! Letztes Jahr haben wir die Marke von einer Million Downloads überschritten. Dieses Jahr wollen wir eine Million mehr erreichen, aber alleine schaffen wir das nicht.
         \n\nWären Sie bitte so freundlich, Husk mit Ihren Freunden zu teilen? Vielen Dank und einen wunderschönen Tag!</string>
     <string name="keyboard_message">Hallo, die Tastatur ist der schnellste Weg, Apps in Husk zu finden und zu starten. Können wir Sie bitten, die Funktion noch ein paar Tage eingeschaltet zu lassen und dann zu entscheiden?
@@ -101,8 +97,6 @@
         \n\nHinweis: Es werden keine Daten zur App-Nutzung gesammelt. Alles wird auf Ihrem Gerät verarbeitet.</string>
     <string name="pro_message">Husk hat auch eine Pro-Version namens Pro Launcher. Sie bietet zusätzliche Funktionen wie Wetter, Widgets, Schriftarten, Ordner, AMOLED-Hintergründe usw.
         \n\nEs ist auch der beste Weg, die Entwickler von Husk zu unterstützen. Schau es dir an!</string>
-    <string name="wallpaper_message">Husk bietet täglich wunderschöne neue Wallpapers. Verleihe deinem Homescreen jeden Tag ein frisches Aussehen – kostenlos!
-        \n\nMöchtest du es ausprobieren?</string>
     <string name="accessibility_service_description">Die Zugriffsberechtigung ist erforderlich, um das Sperren durch Doppeltippen und die Home-Taste zum Anzeigen der letzten Apps zu ermöglichen. Die von Husk über diesen Dienst erfassten Daten verlassen Ihr Gerät nicht.</string>
     <string name="support_husk_for_free">Unterstützen Sie Husk kostenlos, indem Sie unseren Amazon-Partnerlink verwenden.</string>
     <string name="support_husk_message">Jedes Mal, wenn Sie über unseren Link etwas kaufen, erhalten wir eine kleine Provision. Bitte speichern Sie den Link und verwenden Sie ihn bei jedem Online-Einkauf. Dan­ke­schön!</string>
@@ -129,7 +123,6 @@
     <string name="screen_time">Bildschirmzeit</string>
     <string name="about_husk">Über Husk</string>
     <string name="learn_more">Erfahren Sie mehr</string>
-    <string name="did_you_know">Wussten Sie?</string>
     <string name="leave_a_review">Rezension</string>
     <string name="review_message">Husk ist und bleibt völlig kostenlos. Es gibt keine Werbung. Es werden keine Daten erfasst. Am wichtigsten ist, dass es Ihnen dabei hilft, Ihre Bildschirmzeit zu verkürzen und ein gesünderes digitales Leben zu führen.
         \n\nWir glauben, dass der Wechsel zu einem Minimal Launcher eine ausgezeichnete Entscheidung ist. Obwohl wir offensichtlich voreingenommen sind, hoffen wir, dass Ihnen die Erfahrung gefällt. Teilen Sie uns gerne Ihre Gedanken mit!</string>
