@@ -37,10 +37,11 @@ Everything listed here works on my device (Android 15). Anything that does not w
 
 This is a work in progress and I would rather tell you where the edges are than have you find them.
 
-1. **The launcher icon is still Olauncher's green O.** This is the most visible unfinished thing
-   in the project. It is cosmetic, but it is wrong, and it is the next thing to fix.
+1. **The launcher icon is a placeholder.** A pixel H on the dark background, drawn on the same
+   10dp grid as the typeface. It is honest and it is mine, but it is the work of a developer and
+   not a designer, and it will be replaced.
 2. **There are no screenshots.** The ones inherited from upstream showed Olauncher's UI, so they
-   were deleted rather than shipped as if they were Husk. Real ones come with the icon.
+   were deleted rather than shipped as if they were Husk. Real ones still need taking.
 3. **Translations are inherited and stale.** 20 languages came from Olauncher's contributors and
    still cover the inherited UI, but every string Husk added (dialer, blocking, notifications,
    reading list) exists only in English. Only English and Arabic are maintained.
