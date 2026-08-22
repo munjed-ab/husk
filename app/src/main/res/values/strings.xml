@@ -73,7 +73,7 @@
     <string name="system_default">System</string>
     <string name="dark">Dark</string>
     <string name="light">Light</string>
-    <string name="welcome_to_olauncher_settings">Welcome to the settings!
+    <string name="welcome_to_settings">Welcome to the settings!
         \n\nRemember, if you have any questions, our About page has the answer.</string>
     <string name="rate_us_message">Hi, you won\'t see this message again.
         \n\nIf you\'re finding Husk useful, could you please leave a 5-star review? It\'ll mean the world to us. Thank you!</string>
@@ -95,7 +95,7 @@
     <string name="date_only">Date only</string>
     <string name="bottom_on">Bottom: On</string>
     <string name="bottom_off">Bottom: Off</string>
-    <string name="please_set_olauncher_as_default_first">Please set Husk as default first</string>
+    <string name="please_set_husk_as_default_first">Please set Husk as default first</string>
     <string name="tip_start_typing_for_rename">Tip: Start typing for app RENAME option</string>
     <string name="hidden_apps_message">Note: Tap on \'Husk\' at the top of this Settings page to find your hidden apps.\n\nMore details available in our About page.</string>
     <string name="swipe_down_for">Swipe down for</string>
@@ -179,7 +179,7 @@
     <string name="swipe_left_app_disabled">Swipe left app disabled</string>
     <string name="swipe_right_app_disabled">Swipe right app disabled</string>
     <string name="your_wallpaper_will_update_shortly">Your wallpaper will update shortly</string>
-    <string name="olauncher_is_not_default_launcher">Husk is not default. Wallpaper update will fail.</string>
+    <string name="husk_is_not_default_launcher">Husk is not default. Wallpaper update will fail.</string>
     <string name="long_press_to_enable">Long press to enable</string>
     <string name="no_hidden_apps">No hidden apps</string>
     <string name="hidden_apps">Hidden apps</string>
@@ -192,7 +192,7 @@
     <string name="vpn_permission_needed">Permission needed to block apps</string>
     <string name="adapter_show">Show</string>
     <string name="adapter_hide">Hide</string>
-    <string name="about_olauncher">About and FAQs</string>
+    <string name="about_husk">About and FAQs</string>
     <string name="screen_time">Screen time</string>
     <string name="learn_more">Learn more</string>
     <string name="did_you_know">Did you know?</string>
