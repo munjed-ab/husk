@@ -98,6 +98,10 @@ Each permission exists for exactly one feature, and the feature dies without it.
 | `INTERNET` | Reading list, and the local VPN's loopback |
 | `SET_WALLPAPER` | Solid colour and gradient backgrounds |
 | Accessibility service | Double tap to lock, optional and off by default |
+| `WAKE_LOCK`, `ACCESS_NETWORK_STATE`, `RECEIVE_BOOT_COMPLETED` | Not requested by Husk. WorkManager merges these into the manifest, and they show up in the built APK because the reading list schedules a background job |
+
+Note: that last row is why the permission list you see on an APK inspector is longer than the one
+above it. A library's manifest merges into yours whether you use that part of the library or not.
 
 ## FAQ
 
