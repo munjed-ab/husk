@@ -40,8 +40,9 @@ import app.olauncher.helper.showToast
 import app.olauncher.helper.syncAppBlocker
 import app.olauncher.helper.uninstall
 
-// plain text, the pixel font has no symbol glyphs and would fall back to another face
-private const val BLOCKED_MARK = " · off"
+// plain letters: the pixel font carries no symbol glyphs, and a missing one drops the whole
+// row into a fallback face
+private const val BLOCKED_MARK = " OFF"
 
 class AppDrawerFragment : BaseFragment() {
 

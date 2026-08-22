@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData
 
 data class NotifItem(
     val key: String,
+    val packageName: String,
     val appLabel: String,
     val title: String,
     val text: String,
@@ -65,6 +66,7 @@ class NotificationService : NotificationListenerService() {
         }
         return NotifItem(
             key = sbn.key,
+            packageName = sbn.packageName,
             appLabel = label,
             title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty(),
             text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty(),

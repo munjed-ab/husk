@@ -56,16 +56,20 @@
 
         <activity
             android:name=".ui.DialActivity"
+            android:excludeFromRecents="true"
             android:exported="false"
             android:label="@string/dial"
             android:launchMode="singleTask"
+            android:taskAffinity=""
             android:windowSoftInputMode="stateVisible" />
 
         <activity
             android:name=".ui.NotificationsActivity"
+            android:excludeFromRecents="true"
             android:exported="false"
             android:label="@string/notifications"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:taskAffinity="" />
 
         <activity
             android:name=".helper.PinItemActivity"

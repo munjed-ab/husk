@@ -1,5 +1,7 @@
 package app.olauncher.ui
 
+import android.app.ActivityOptions
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -55,9 +57,31 @@ class NotificationsActivity : AppCompatActivity() {
 
     /** Fire the notification's own tap action, then clear it — same open-and-dismiss as the reading line. */
     private fun open(notif: NotifItem) {
-        runCatching { notif.intent?.send() }
+        if (!sendContentIntent(notif) && !launchApp(notif.packageName)) return
         NotificationService.dismiss(notif.key)
         finish()
+    }
+
+    /**
+     * The notification's own intent was created by an app that is now in the background, so on
+     * Android 14+ it only starts an activity if we, the sender, hand over our foreground privileges.
+     * Without that the send() succeeds silently and nothing opens.
+     */
+    private fun sendContentIntent(notif: NotifItem): Boolean {
+        val intent = notif.intent ?: return false
+        val options = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+            ActivityOptions.makeBasic()
+                .setPendingIntentBackgroundActivityStartMode(ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
+                .toBundle()
+        else null
+        // a canceled intent (notification rebuilt since we read it) falls through to the app launch
+        return runCatching { intent.send(this, 0, null, null, null, null, options) }.isSuccess
+    }
+
+    /** Fallback for notifications with no tap action of their own: just open the app. */
+    private fun launchApp(packageName: String): Boolean {
+        val intent = packageManager.getLaunchIntentForPackage(packageName) ?: return false
+        return runCatching { startActivity(intent) }.isSuccess
     }
 
     private fun attachSwipeToDismiss() {

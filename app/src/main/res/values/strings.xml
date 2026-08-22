@@ -186,7 +186,7 @@
     <string name="block_internet">Block internet</string>
     <string name="blocked_apps_count">%d blocked</string>
     <string name="blocked">Blocked</string>
-    <string name="blocked_apps_sign" translatable="false">%d offline</string>
+    <string name="blocked_apps_sign" translatable="false">%d OFF</string>
     <string name="internet_blocked">%s blocked</string>
     <string name="internet_unblocked">%s unblocked</string>
     <string name="vpn_permission_needed">Permission needed to block apps</string>
