@@ -3,6 +3,9 @@
 A minimal, pixelated Android launcher. Text instead of icons, a pixel typeface that also covers
 Arabic, and enough of a phone (dialer, media, notifications) that you rarely leave the home screen.
 
+<img width="485" height="1080" alt="WhatsApp Image 2026-08-22 at 5 24 17 PM" src="https://github.com/user-attachments/assets/db3e4857-0c14-4b6e-9824-b8225b34c2aa" />
+
+
 Husk is a fork of [Olauncher](https://github.com/tanujnotes/Olauncher). It is a personal project
 built for my own phone first. It is published because it works well enough for me to use every day,
 not because it is a finished product. Read the [State](#state) section before you install it.
