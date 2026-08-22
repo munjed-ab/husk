@@ -31,7 +31,13 @@ Builds:
     gradle:
       - yes
 
-AutoUpdateMode: Version
-UpdateCheckMode: Tags
+# UpdateCheckMode is None, not Tags, on purpose. This fork still carries Olauncher's tags
+# (v5.3.2 through v6.7.19) and the version was reset to 1.0.0, so a tag sort picks v6.7.19 as
+# the newest release and F-Droid would track the wrong one. Delete the inherited tags, or never
+# push them, and this can become:
+#   AutoUpdateMode: Version
+#   UpdateCheckMode: Tags
+AutoUpdateMode: None
+UpdateCheckMode: None
 CurrentVersion: 1.0.0
 CurrentVersionCode: 1
