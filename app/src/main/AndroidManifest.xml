@@ -15,7 +15,7 @@
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
-    <!--Used only for downloading wallpapers-->
+    <!--Used by the reading list (Substack RSS) and by the app internet blocker's local VPN-->
     <uses-permission android:name="android.permission.INTERNET" />
     <!--Used only for opening alarm app-->
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />

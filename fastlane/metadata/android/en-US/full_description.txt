@@ -1,1 +1,29 @@
-<p><b>Are you using your phone, or is your phone using you?</b></b><p><i>Olauncher</i> is a minimal AF Android launcher with just enough features. By the way, AF stands for AdFree. :D</p><p><br><b>FEATURES YOU MIGHT LIKE:</b></p><ul><li><b>Minimalist homescreen:</b> A clean homescreen experience with no icons, ads or any distraction. It helps you reduce your screen time and increase productivity.</li><li><b>Customizations:</b> Resize text, rename apps, hide unused apps, show or hide the status bar, app text alignments, etc.</li><li><b>Gestures:</b> Double tap to lock screen. Swipe left or right to open apps. Swipe down for notifications.</li><li><b>Wallpaper:</b> A beautiful new wallpaper, daily. No one said that a minimalist launcher has to be boring. :)</li><li><b>Privacy:</b> No data collection. FOSS Android launcher. Open source under GPLv3 license.</li><li><b>Launcher features:</b> Dark &amp; light themes, dual apps support, work profile support, auto app launch.</li></ul><p>To maintain the simplicity of such a minimalist launcher, a few niche features are available but hidden. Please visit the <b>About</b> page in settings for the complete list.</p><p><b>FAQs:</b></p><ul><li><b>1. Hidden apps</b> - Long press anywhere on the home screen to open settings. Tap ’Olauncher’ on the top to see your hidden apps.</li><li><b>2. Navigation gestures</b> - Some devices do not support gestures with a downloaded Android launchers. This can only be fixed by your device manufacturer via an update.</li><li><b>3. Wallpapers</b> - This Android launcher provides a new wallpaper daily. You can also set any wallpaper you want from your phone settings or Gallery/Photos app.</li></ul><p>Our About page in settings has rest of the FAQs and several other tips to help you make the best usage of Olauncher. Please check it out.</p><p><b>Accessibility Service:</b> Our Accessibility Service is used exclusively to let you turn off your phone’s screen with a double-tap gesture. It is optional, disabled by default and doesn’t collect or share any data.</p><p>P.S. Thank you for checking out the description till the end. Only a few very special people do that. Take care! ❤️</p>
+Husk is a minimal Android launcher: text instead of icons, a pixel typeface that also covers Arabic, and enough of a phone built in that you rarely leave the home screen.
+
+It is a personal project, published because it works well enough to use every day, not because it is finished. The README lists what is still rough.
+
+FEATURES
+
+* Home screen with up to 8 apps in a two-column grid, optional clock, date and screen time.
+* App drawer: swipe up and type to filter. Auto-launch fires when exactly one app matches.
+* Dialer: swipe down for a searchable contact list and recent calls. Search by name or number.
+* Media controls on the home screen, driving VLC or any player exposing a media browser service.
+* Notifications: newest one on a single home screen line, tap to open and dismiss. Full panel with swipe-to-dismiss.
+* Per-app internet blocking. Pick apps and they lose network access, using a local VPN, no root.
+* Reading list pulling one article per publication from Substack public topic leaderboards. Optional.
+* Backgrounds: device wallpaper, solid colour, gradient, or your own image.
+* Full Arabic support in a matching pixel typeface. This is why the fork exists.
+
+PRIVACY
+
+No analytics, no crash reporter, no account, no server. Contacts, notifications and usage statistics are read on device and never leave it.
+
+Two optional features touch the network. The reading list requests Substack public endpoints, which is why this listing carries the NonFreeNet flag. Turn it off and no request is made. Internet blocking runs a local VPN that drops blocked apps' packets; it has no remote endpoint and logs nothing, though Android will still warn you that a VPN "can monitor network traffic" because that is what the API grants in general.
+
+KNOWN LIMITS
+
+* Android permits one active VPN, so app blocking and a real VPN cannot run together.
+* Translations are inherited from Olauncher and cover only the older UI. Everything Husk added is English only.
+* Tested on one device running Android 15.
+
+Husk is a fork of Olauncher by tanujnotes, GPL-3.0.

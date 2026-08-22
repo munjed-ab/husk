@@ -1,0 +1,7 @@
+First Husk release.
+
+Husk forks Olauncher and adds: a dialer with contact and call log search, home screen media controls, a notification line and panel, per-app internet blocking through a local VPN, a Substack reading list, a two-column home grid, background options, and full Arabic support in a matching pixel typeface.
+
+Removed from upstream: daily wallpaper rotation, which fetched an index from the upstream author's personal gist, and the Play Store rating prompt.
+
+Known limits are listed in the README. The launcher icon is still upstream's and translations other than English and Arabic are inherited and stale.

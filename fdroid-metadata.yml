@@ -1,0 +1,37 @@
+# F-Droid submission recipe for Husk.
+#
+# This file is not used by the app build. Copy it into an fdroiddata checkout as
+# metadata/com.munjed.husk.yml and open a merge request there:
+#   https://gitlab.com/fdroid/fdroiddata
+#
+# Before submitting, replace the commit hash below with the tag's actual commit.
+
+Categories:
+  - System
+License: GPL-3.0-only
+AuthorName: munjed-ab
+SourceCode: https://github.com/munjed-ab/husk
+IssueTracker: https://github.com/munjed-ab/husk/issues
+Changelog: https://github.com/munjed-ab/husk/releases
+
+# The reading list queries Substack's public API and RSS feeds, a third-party
+# service. It is optional and off until the user picks a topic.
+AntiFeatures:
+  NonFreeNet:
+    en-US: The optional reading list fetches articles from Substack's public API.
+
+RepoType: git
+Repo: https://github.com/munjed-ab/husk.git
+
+Builds:
+  - versionName: 1.0.0
+    versionCode: 1
+    commit: v1.0.0
+    subdir: app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 1.0.0
+CurrentVersionCode: 1

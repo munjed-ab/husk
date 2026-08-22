@@ -48,15 +48,11 @@ import com.munjed.husk.data.Constants
 import com.munjed.husk.data.Prefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import java.io.InputStream
-import java.net.HttpURLConnection
 import java.net.URL
 import java.text.Collator
-import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.Scanner
 import kotlin.math.pow
 import kotlin.math.sqrt
 
