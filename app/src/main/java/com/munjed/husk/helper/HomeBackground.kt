@@ -54,6 +54,8 @@ fun applyHomeBackground(root: View, image: ImageView, prefs: Prefs) {
 
         Constants.HomeBackground.IMAGE -> {
             root.background = null
+            // runs on every resume; decoding a full-screen photo each time is a visible stall
+            if (image.isVisible && image.tag == prefs.homeBgImage) return
             val bitmap = decodeSampled(root.context, prefs.homeBgImage)
             if (bitmap == null) {
                 // uri revoked or file deleted, drop back to wallpaper rather than showing black
@@ -61,6 +63,7 @@ fun applyHomeBackground(root: View, image: ImageView, prefs: Prefs) {
                 prefs.homeBgType = Constants.HomeBackground.WALLPAPER
             } else {
                 image.setImageBitmap(bitmap)
+                image.tag = prefs.homeBgImage
                 image.isVisible = true
             }
         }
@@ -73,6 +76,7 @@ fun applyHomeBackground(root: View, image: ImageView, prefs: Prefs) {
 }
 
 private fun clearImage(image: ImageView) {
+    image.tag = null
     image.isVisible = false
     image.setImageDrawable(null)
 }
