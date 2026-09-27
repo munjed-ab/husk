@@ -1,0 +1,9 @@
+Pick which app handles home screen music controls, instead of always guessing VLC first.
+
+Added a Font setting: four Latin/Arabic font pairings (Pixel, Modern, Classic, Handwritten), applied across the whole app. Non-pixel fonts get a matching plain icon set for media controls, info and the recording panel, instead of the pixel-art icons.
+
+Added daily quotes on the home screen and a voice recorder (long press the volume-up + volume-down chord), both off by default.
+
+Dropped the built-in animations and the artificial delay before a long press fires, so navigation feels instant.
+
+Added a "More" link in Settings pointing to the author's other apps, letsgo and smartshots. Nothing shows unless you tap it.
