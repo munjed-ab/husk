@@ -7,12 +7,14 @@ import android.media.AudioManager
 import android.media.browse.MediaBrowser
 import android.media.MediaMetadata
 import android.media.session.MediaController
+import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import com.munjed.husk.BuildConfig
+import com.munjed.husk.data.Prefs
 import android.view.KeyEvent
 
 private const val VLC_PACKAGE = "org.videolan.vlc"
@@ -32,10 +34,11 @@ private const val START_RETRY_MS = 1500L
 private const val SLEEP_TIMER_MINUTES = 30
 
 /**
- * Transport controls for VLC. VLC publishes its playback service as a MediaBrowserService for
- * Android Auto, so binding to it gives the real queue, its ordering and its history without the
- * notification listener permission. Binding also starts VLC when it is not running, which is what
- * makes the play button work from cold.
+ * Transport controls for the music app, VLC by default or whatever is chosen in settings. That app
+ * publishing its playback service as a MediaBrowserService (Android Auto needs the same thing) is
+ * what gives the real queue, its ordering and its history, without the notification listener
+ * permission. Binding also starts the app when it is not running, which is what makes the play
+ * button work from cold.
  *
  * ponytail: media key events are the fallback path. They cost nothing and cover every other player,
  * so there is no second integration to write when VLC is missing.
@@ -47,6 +50,7 @@ private fun log(message: String) {
 
 class MediaControl(private val context: Context) {
 
+    private val prefs = Prefs(context)
     private var browser: MediaBrowser? = null
     private var controller: MediaController? = null
     private var playWhenConnected = false
@@ -97,19 +101,24 @@ class MediaControl(private val context: Context) {
         return if (sleepMinutes > 0) "$name · ${sleepMinutes}m" else name
     }
 
+    // shared by both connection paths: bind, wire callbacks, replay whatever waited on it
+    private fun onControllerReady() {
+        log("connected, state=${controller?.playbackState?.state}")
+        onPlayingChanged?.invoke(isPlaying)
+        onTrackChanged?.invoke(titleOf(controller?.metadata))
+        if (playWhenConnected) {
+            playWhenConnected = false
+            playPause()
+        }
+    }
+
     private val connectionCallback = object : MediaBrowser.ConnectionCallback() {
         override fun onConnected() {
             val browser = browser ?: return
             controller = MediaController(context, browser.sessionToken).apply {
                 registerCallback(controllerCallback)
             }
-            log("connected, state=${controller?.playbackState?.state}")
-            onPlayingChanged?.invoke(isPlaying)
-            onTrackChanged?.invoke(titleOf(controller?.metadata))
-            if (playWhenConnected) {
-                playWhenConnected = false
-                playPause()
-            }
+            onControllerReady()
         }
 
         override fun onConnectionFailed() {
@@ -129,29 +138,66 @@ class MediaControl(private val context: Context) {
         }
     }
 
+    /** The app the controls are currently driving, for a "tap the title to open it" button. */
+    val targetPackage: String?
+        get() = controller?.packageName?.takeIf { it.isNotBlank() }
+            ?: prefs.musicAppPackage.takeIf { it.isNotBlank() }
+            ?: mediaBrowserService()?.packageName
+
     /**
-     * False when no app publishes a browser service and nothing is playing right now, i.e. there is
-     * nothing the buttons could ever drive, so the home screen hides them.
+     * False when no app publishes a browser service, no active session can be read either, and
+     * nothing is playing right now, i.e. there is nothing the buttons could ever drive, so the home
+     * screen hides them.
      */
     fun hasPlayer(): Boolean {
         if (mediaBrowserService() != null) return true
+        if (activeSessionController() != null) return true
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         return audioManager.isMusicActive
     }
 
     fun connect() {
-        val service = mediaBrowserService() ?: return
-        // a browser left over from a killed player never reconnects on its own, throw it away
-        if (browser?.isConnected == true && controller != null) return
-        disconnect()
-        log("connecting to $service")
-        browser = MediaBrowser(context, service, connectionCallback, null)
-        try {
-            browser?.connect()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            browser = null
+        val service = mediaBrowserService()
+        if (service != null) {
+            // a browser left over from a killed player never reconnects on its own, throw it away
+            if (browser?.isConnected == true && controller != null) return
+            disconnect()
+            log("connecting to $service")
+            browser = MediaBrowser(context, service, connectionCallback, null)
+            try {
+                browser?.connect()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                browser = null
+            }
+            return
         }
+        // the chosen app publishes no browser service (most apps don't): read its session directly
+        // instead of flying blind on media keys. Needs notification access, which Husk already asks
+        // for its own notification list, so this is opportunistic rather than a new permission ask.
+        val sessionController = activeSessionController() ?: return
+        if (controller?.sessionToken == sessionController.sessionToken) return
+        disconnect()
+        controller = sessionController.apply { registerCallback(controllerCallback) }
+        onControllerReady()
+    }
+
+    /**
+     * The chosen app's currently active MediaSession, read through the notification listener Husk
+     * already runs for its own notification list. Null when notification access was never granted
+     * (getActiveSessions throws) or the app has no active session right now.
+     */
+    private fun activeSessionController(): MediaController? {
+        val manager = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
+        val component = ComponentName(context, NotificationService::class.java)
+        val sessions = try {
+            manager.getActiveSessions(component)
+        } catch (e: SecurityException) {
+            return null
+        }
+        val preferred = prefs.musicAppPackage
+        return if (preferred.isNotBlank()) sessions.firstOrNull { it.packageName == preferred }
+        else sessions.firstOrNull { it.packageName != context.packageName }
     }
 
     fun disconnect() {
@@ -176,16 +222,27 @@ class MediaControl(private val context: Context) {
         val state = controller.playbackState?.state
         log("play pressed, state=$state, queue=${controller.queue?.size}")
         when (state) {
-            PlaybackState.STATE_PLAYING -> controller.transportControls.pause()
-            PlaybackState.STATE_PAUSED -> controller.transportControls.play()
+            PlaybackState.STATE_PLAYING -> sendCommand({ it.pause() }, KeyEvent.KEYCODE_MEDIA_PAUSE)
+            PlaybackState.STATE_PAUSED -> sendCommand({ it.play() }, KeyEvent.KEYCODE_MEDIA_PLAY)
             else -> shuffleAll() // nothing loaded, so start something at random
         }
     }
 
     /**
-     * Start a fresh queue when VLC has nothing loaded. Walks its browse tree from the real root
-     * (subscribing to a guessed id returns nothing), preferring shuffle, then history, then any
-     * playable track. Ordering after this point is VLC's own.
+     * Browser-bound apps (VLC) get real transport controls, already fast there. Apps only reached
+     * through the notification-listener session (no browser, e.g. an app with no MediaBrowserService)
+     * get a media key instead: on this device the same command noticeably lags going through the
+     * session's own transport-control binder instead of the system's media key dispatch.
+     */
+    private fun sendCommand(controlsAction: (MediaController.TransportControls) -> Unit, keyCode: Int) {
+        val controls = controller?.transportControls
+        if (browser != null && controls != null) controlsAction(controls) else sendKey(keyCode)
+    }
+
+    /**
+     * Start a fresh queue when nothing is loaded. `playFromSearch("", null)` is a transport control,
+     * not a browse-tree one, so it works whether or not this app has a browser to walk; VLC's browse
+     * tree (steps in ensureStarted()) is only an escalation for when that plain ask does not stick.
      */
     fun shuffleAll() {
         val controller = controller ?: run {
@@ -193,9 +250,8 @@ class MediaControl(private val context: Context) {
             connect()
             return
         }
-        val browser = browser ?: return
-        // VLC's own "play something" entry point. Its browse tree is not reliably populated in the
-        // first moments after the service starts, so this goes first and the browse is a retry step.
+        // its browse tree, when there is one, is not reliably populated in the first moments after
+        // the service starts, so this goes first and the browse is a retry step.
         controller.transportControls.playFromSearch("", null)
         ensureStarted()
     }
@@ -235,19 +291,13 @@ class MediaControl(private val context: Context) {
     }
 
     fun next() {
-        val controls = controller?.transportControls
-        if (controls == null) {
-            connect()
-            sendKey(KeyEvent.KEYCODE_MEDIA_NEXT)
-        } else controls.skipToNext()
+        if (controller == null) connect()
+        sendCommand({ it.skipToNext() }, KeyEvent.KEYCODE_MEDIA_NEXT)
     }
 
     fun previous() {
-        val controls = controller?.transportControls
-        if (controls == null) {
-            connect()
-            sendKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
-        } else controls.skipToPrevious()
+        if (controller == null) connect()
+        sendCommand({ it.skipToPrevious() }, KeyEvent.KEYCODE_MEDIA_PREVIOUS)
     }
 
     /**
@@ -270,13 +320,20 @@ class MediaControl(private val context: Context) {
     }
 
     /**
-     * VLC when it is installed, otherwise any other app that publishes a MediaBrowserService
-     * (most music players do, it is how Android Auto talks to them). Null means no such app, and
-     * every action falls back to media keys.
+     * The app chosen in settings, when it publishes a browser service; VLC when installed and
+     * nothing was chosen; otherwise any other app that publishes a MediaBrowserService (most music
+     * players do, it is how Android Auto talks to them). Null means no such app, and every action
+     * falls back to media keys. A chosen app that has no browser service also falls back to media
+     * keys rather than silently binding to a different player.
      */
     private fun mediaBrowserService(): ComponentName? {
         val pm = context.packageManager
         val services = pm.queryIntentServices(Intent(SERVICE_INTERFACE), 0)
+        val preferred = prefs.musicAppPackage
+        if (preferred.isNotBlank()) {
+            return services.firstOrNull { it.serviceInfo.packageName == preferred }
+                ?.let { ComponentName(it.serviceInfo.packageName, it.serviceInfo.name) }
+        }
         val vlc = services.firstOrNull { it.serviceInfo.packageName == VLC_PACKAGE }
         val chosen = vlc ?: services.firstOrNull { service ->
             val pkg = service.serviceInfo.packageName
