@@ -3,7 +3,8 @@
 A minimal, pixelated Android launcher. Text instead of icons, a pixel typeface that also covers
 Arabic, and enough of a phone (dialer, media, notifications) that you rarely leave the home screen.
 
-<img width="485" height="1080" alt="WhatsApp Image 2026-08-22 at 5 24 17 PM" src="https://github.com/user-attachments/assets/db3e4857-0c14-4b6e-9824-b8225b34c2aa" />
+<img width="360" alt="Home screen with clock, quote, and shortcuts" src="docs/Screenshot_20260927-105722.jpeg" />
+<img width="360" alt="Home screen with media controls playing" src="docs/Screenshot_20260927-105729.jpeg" />
 
 
 Husk is a fork of [Olauncher](https://github.com/tanujnotes/Olauncher). It is a personal project
@@ -34,9 +35,9 @@ Everything listed here works on my device (Android 15). Anything that does not w
 8. **Backgrounds.** Device wallpaper, a solid colour, a gradient, or your own image.
 9. **Voice recorder.** Both volume keys at once, or a quick settings tile, starts recording from
    the lock screen, from inside any app, with the screen off. Recordings stay in Husk's private
-   storage: no gallery entry, no other app can read them, and they are excluded from cloud backup
-   and device transfer. Off by default. Android shows an ongoing notification and the green
-   microphone dot for as long as it runs, and neither can be hidden, so this records openly.
+   storage: no gallery entry, no other app can read them, and they do not leave the device for any
+   reason. Off by default. Android shows an ongoing notification and the green microphone dot for
+   as long as it runs, and neither can be hidden, so this records openly.
 10. **Arabic.** Full Arabic support in a matching pixel typeface. This is the reason the fork exists.
    Every other minimal launcher I tried falls back to a system face the moment you write Arabic,
    which breaks the whole look.
@@ -48,9 +49,7 @@ This is a work in progress and I would rather tell you where the edges are than 
 1. **The launcher icon is a placeholder.** A pixel H on the dark background, drawn on the same
    10dp grid as the typeface. It is honest and it is mine, but it is the work of a developer and
    not a designer, and it will be replaced.
-2. **There are no screenshots.** The ones inherited from upstream showed Olauncher's UI, so they
-   were deleted rather than shipped as if they were Husk. Real ones still need taking.
-3. **Translations are inherited and stale.** 20 languages came from Olauncher's contributors and
+2. **Translations are inherited and stale.** 20 languages came from Olauncher's contributors and
    still cover the inherited UI, but every string Husk added (dialer, blocking, notifications,
    quotes) exists only in English. Only English and Arabic are maintained.
 4. **Test coverage is thin.** Unit tests cover dialer search matching, recording names and quote
