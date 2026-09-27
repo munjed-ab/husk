@@ -29,10 +29,15 @@ Everything listed here works on my device (Android 15). Anything that does not w
 6. **Per-app internet blocking.** Pick apps in settings, and they lose network access. This runs a
    local `VpnService` that drops their traffic, so it needs no root, and no traffic leaves your
    device through anyone's server. See [Privacy](PRIVACY.md).
-7. **Reading list.** Pulls one article per publication from Substack's public topic leaderboards,
-   by topic rather than by newsletter. Optional and off until you pick a topic.
+7. **Quotes.** One short line on the home screen, sometimes gentle, sometimes harsh. A new one
+   each time you unlock or come back home, tap it for another. Bundled in the app, no network.
 8. **Backgrounds.** Device wallpaper, a solid colour, a gradient, or your own image.
-9. **Arabic.** Full Arabic support in a matching pixel typeface. This is the reason the fork exists.
+9. **Voice recorder.** Both volume keys at once, or a quick settings tile, starts recording from
+   the lock screen, from inside any app, with the screen off. Recordings stay in Husk's private
+   storage: no gallery entry, no other app can read them, and they are excluded from cloud backup
+   and device transfer. Off by default. Android shows an ongoing notification and the green
+   microphone dot for as long as it runs, and neither can be hidden, so this records openly.
+10. **Arabic.** Full Arabic support in a matching pixel typeface. This is the reason the fork exists.
    Every other minimal launcher I tried falls back to a system face the moment you write Arabic,
    which breaks the whole look.
 
@@ -47,13 +52,21 @@ This is a work in progress and I would rather tell you where the edges are than 
    were deleted rather than shipped as if they were Husk. Real ones still need taking.
 3. **Translations are inherited and stale.** 20 languages came from Olauncher's contributors and
    still cover the inherited UI, but every string Husk added (dialer, blocking, notifications,
-   reading list) exists only in English. Only English and Arabic are maintained.
-4. **Test coverage is one file.** `ContactMatchTest` covers dialer search matching. Everything else
-   is verified by using the launcher daily, which catches what I do and nothing else.
+   quotes) exists only in English. Only English and Arabic are maintained.
+4. **Test coverage is thin.** Unit tests cover dialer search matching, recording names and quote
+   rotation. Everything else is verified by using the launcher daily, which catches what I do and nothing else.
 5. **Internet blocking holds one VPN slot.** Android allows exactly one active VPN, so Husk's
    blocker and a real VPN cannot run at the same time. If you need a VPN, you cannot use this
    feature. This is a platform limit, not a bug I can fix.
-6. **Tested on one phone.** Android 15, one device, one ROM. `minSdk` is 24 and it should work
+6. **The recorder cannot be silent, and should not be.** Android only grants the microphone in the
+   background to a foreground service, and a foreground service must post a notification. On top of
+   that the system shows a green microphone dot. Husk does not try to work around either. Recording
+   people who have not been told is illegal in many places; check your own law before you rely on
+   this.
+7. **The volume chord depends on the accessibility service.** Without it only the quick settings
+   tile works. The chord never swallows a volume key, so the volume dialog still appears when it
+   fires, and you will have stepped the volume once.
+8. **Tested on one phone.** Android 15, one device, one ROM. `minSdk` is 24 and it should work
    further back, but "should" is doing real work in that sentence.
 
 Note: Husk is not on the Play Store and I have no plans to put it there. The `VpnService`,
@@ -98,13 +111,9 @@ Each permission exists for exactly one feature, and the feature dies without it.
 | `BIND_NOTIFICATION_LISTENER_SERVICE` | Notification line and panel |
 | `BIND_VPN_SERVICE`, `FOREGROUND_SERVICE` | Per-app internet blocking |
 | `QUERY_ALL_PACKAGES` | Listing apps in the drawer, which is what a launcher is |
-| `INTERNET` | Reading list, and the local VPN's loopback |
+| `INTERNET` | The local VPN's loopback |
 | `SET_WALLPAPER` | Solid colour and gradient backgrounds |
 | Accessibility service | Double tap to lock, optional and off by default |
-| `WAKE_LOCK`, `ACCESS_NETWORK_STATE`, `RECEIVE_BOOT_COMPLETED` | Not requested by Husk. WorkManager merges these into the manifest, and they show up in the built APK because the reading list schedules a background job |
-
-Note: that last row is why the permission list you see on an APK inspector is longer than the one
-above it. A library's manifest merges into yours whether you use that part of the library or not.
 
 ## FAQ
 
@@ -130,15 +139,15 @@ Long press an app in the drawer to hide it. To see hidden apps again, open setti
 
 ## Privacy
 
-Husk collects nothing, sends no analytics, and has no crash reporter. Two features touch the
-network and both are optional. The details are in [PRIVACY.md](PRIVACY.md).
+Husk collects nothing, sends no analytics, and has no crash reporter. One feature touches the
+network and it is optional. The details are in [PRIVACY.md](PRIVACY.md).
 
 ## Differences from upstream
 
 For anyone comparing against Olauncher:
 
-1. Added: dialer, media controls, notification line and panel, per-app internet blocking, reading
-   list, two-column home grid, background options, Arabic pixel typography.
+1. Added: dialer, media controls, notification line and panel, per-app internet blocking, home
+   quotes, voice recorder, two-column home grid, background options, Arabic pixel typography.
 2. Removed: daily wallpaper rotation. It fetched an index from the upstream author's personal
    GitHub gist, which is a third-party service this fork does not control and cannot keep alive.
 3. Removed: the Play Store rating prompt and the settings footer advertising another app.
@@ -149,9 +158,11 @@ For anyone comparing against Olauncher:
 Husk is a fork of [Olauncher](https://github.com/tanujnotes/Olauncher) by tanujnotes. The
 minimal launcher core, the app drawer, the gesture handling and 20 translations are his work.
 
-Fonts: [Pixelify Sans](https://github.com/eifetx/Pixelify-Sans) and
-[Handjet](https://github.com/rosettatype/Handjet), both under the SIL Open Font License. Licence
-texts are in [licenses/](licenses/).
+Fonts: [Pixelify Sans](https://github.com/eifetx/Pixelify-Sans), [Handjet](https://github.com/rosettatype/Handjet),
+[Poppins](https://github.com/itfoundry/Poppins), [Tajawal](https://github.com/boutrosfonts/Tajawal),
+[PT Serif](https://company.paratype.com/pt-serif), [Scheherazade New](https://github.com/silnrsi/font-scheherazade),
+[Patrick Hand](https://github.com/pwagesr/patrickhand) and [Katibeh](https://github.com/khaledhosny/katibeh-font), all
+under the SIL Open Font License. Licence texts are in [licenses/](licenses/).
 
 ## Licence
 
