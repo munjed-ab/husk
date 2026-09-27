@@ -71,6 +71,10 @@
     <string name="white">أبيض</string>
     <string name="change_default_launcher">تغيير المشغل الافتراضي</string>
     <string name="privacy">خصوصية</string>
+    <string name="recommended">أكثر</string>
+    <string name="also_by">من نفس المطور</string>
+    <string name="letsgo_description">شغّل موسيقاك على كل جهاز عندك بنفس الوقت، بدون إنترنت أو حساب.</string>
+    <string name="smartshots_description">يخلي صور شاشتك قابلة للبحث.</string>
     <string name="share">شارك</string>
     <string name="share_now">يشارك اﻵن</string>
     <string name="rate">قيّم</string>

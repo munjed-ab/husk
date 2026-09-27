@@ -115,6 +115,8 @@ object Constants {
     const val URL_DOUBLE_TAP = "https://github.com/munjed-ab/husk#double-tap-to-lock-does-nothing"
     const val URL_GITHUB = "https://github.com/munjed-ab/husk"
     const val URL_DUCK_SEARCH = "https://duck.co/?q="
+    const val URL_LETSGO = "https://github.com/munjed-ab/letsgo"
+    const val URL_SMARTSHOTS = "https://github.com/munjed-ab/smartshots"
 
     const val DIGITAL_WELLBEING_PACKAGE_NAME = "com.google.android.apps.wellbeing"
     const val DIGITAL_WELLBEING_ACTIVITY = "com.google.android.apps.wellbeing.settings.TopLevelSettingsActivity"

@@ -234,6 +234,10 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
             R.id.github -> requireContext().openUrl(Constants.URL_GITHUB)
             R.id.privacy -> requireContext().openUrl(Constants.URL_PRIVACY)
+            R.id.recommendedApps -> toggleRecommendedVisibility(true)
+            R.id.closeRecommended -> toggleRecommendedVisibility(false)
+            R.id.letsgoLink -> requireContext().openUrl(Constants.URL_LETSGO)
+            R.id.smartshotsLink -> requireContext().openUrl(Constants.URL_SMARTSHOTS)
         }
     }
 
@@ -318,6 +322,10 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
         binding.github.setOnClickListener(this)
         binding.privacy.setOnClickListener(this)
+        binding.recommendedApps.setOnClickListener(this)
+        binding.closeRecommended.setOnClickListener(this)
+        binding.letsgoLink.setOnClickListener(this)
+        binding.smartshotsLink.setOnClickListener(this)
 
         binding.maxApps0.setOnClickListener(this)
         binding.maxApps1.setOnClickListener(this)
@@ -478,6 +486,11 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         if (isAccessServiceEnabled(requireContext()))
             binding.actionAccessibility.text = getString(R.string.disable)
         binding.accessibilityLayout.isVisible = show
+        binding.scrollView.alpha = if (show) 0.5f else 1f
+    }
+
+    private fun toggleRecommendedVisibility(show: Boolean) {
+        binding.recommendedLayout.isVisible = show
         binding.scrollView.alpha = if (show) 0.5f else 1f
     }
 

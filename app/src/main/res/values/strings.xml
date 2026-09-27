@@ -40,6 +40,12 @@
     <string name="white">White</string>
     <string name="change_default_launcher">Change default launcher</string>
     <string name="privacy">Privacy</string>
+    <string name="recommended">More</string>
+    <string name="also_by">Also from munjed-ab</string>
+    <string name="letsgo_name" translatable="false">letsgo</string>
+    <string name="letsgo_description">Sync music across every device on your Wi-Fi. No internet, no cloud, no accounts.</string>
+    <string name="smartshots_name" translatable="false">smartshots</string>
+    <string name="smartshots_description">Make your screenshots searchable.</string>
     <string name="email">Email</string>
     <string name="swipe_up_for_apps">1. Swipe up for all apps\n2. Long press anywhere for settings</string>
     <string name="apps_on_home_screen">Apps on home screen</string>
