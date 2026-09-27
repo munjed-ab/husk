@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the recordings folder is shareable; the rest of Husk's private storage stays unreachable. -->
+<paths>
+    <files-path
+        name="recordings"
+        path="recordings/" />
+</paths>

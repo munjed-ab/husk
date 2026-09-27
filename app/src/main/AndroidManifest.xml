@@ -6,6 +6,11 @@
     <!--Used only to keep the app internet blocker alive-->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
+    <!--Used only by the voice recorder, see RecorderService-->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <!--The recorder's ongoing notification, which Android requires and does not let us hide-->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!--Used only by the dialer screen-->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
@@ -15,7 +20,7 @@
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
-    <!--Used by the reading list (Substack RSS) and by the app internet blocker's local VPN-->
+    <!--Used by the app internet blocker's local VPN-->
     <uses-permission android:name="android.permission.INTERNET" />
     <!--Used only for opening alarm app-->
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
@@ -72,6 +77,25 @@
             android:taskAffinity="" />
 
         <activity
+            android:name=".ui.RecordingsActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:label="@string/recordings"
+            android:launchMode="singleTask"
+            android:taskAffinity="" />
+
+        <!--Invisible, and shows over the lock screen: the chord's way past Android 14's rule that a
+            microphone service needs a visible activity behind it. See RecordActivity.-->
+        <activity
+            android:name=".ui.RecordActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:showOnLockScreen="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
             android:name=".helper.PinItemActivity"
             android:exported="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar">
@@ -122,6 +146,38 @@
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
+
+        <!--Voice recorder, see RecorderService-->
+        <service
+            android:name=".helper.RecorderService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
+
+        <!--One swipe and one tap from anywhere, including the lock screen-->
+        <service
+            android:name=".helper.RecorderTile"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/recorder"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
+
+        <!--Hands a single recording to a share target and nothing else, see file_paths.xml-->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <service
             android:name=".helper.MyAccessibilityService"

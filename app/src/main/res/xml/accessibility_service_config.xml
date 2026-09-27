@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--flagRequestFilterKeyEvents plus canRequestFilterKeyEvents is what lets the volume chord reach the
+    recorder from the lock screen and from inside other apps. Husk never consumes a key it sees.-->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityEventTypes="typeViewClicked"
     android:accessibilityFeedbackType="feedbackVisual"
-    android:accessibilityFlags="flagDefault"
+    android:accessibilityFlags="flagDefault|flagRequestFilterKeyEvents"
+    android:canRequestFilterKeyEvents="true"
     android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_service_description"
     android:notificationTimeout="10"

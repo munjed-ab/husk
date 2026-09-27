@@ -10,15 +10,16 @@ FEATURES
 * Media controls on the home screen, driving VLC or any player exposing a media browser service.
 * Notifications: newest one on a single home screen line, tap to open and dismiss. Full panel with swipe-to-dismiss.
 * Per-app internet blocking. Pick apps and they lose network access, using a local VPN, no root.
-* Reading list pulling one article per publication from Substack public topic leaderboards. Optional.
+* Quotes: one short line on the home screen, a new one each unlock, tap for another. Bundled, no network.
 * Backgrounds: device wallpaper, solid colour, gradient, or your own image.
+* Voice recorder: both volume keys at once, or a quick settings tile, records from the lock screen or with the screen off. Recordings stay in the app's private storage and never leave the device.
 * Full Arabic support in a matching pixel typeface. This is why the fork exists.
 
 PRIVACY
 
 No analytics, no crash reporter, no account, no server. Contacts, notifications and usage statistics are read on device and never leave it.
 
-Two optional features touch the network. The reading list requests Substack public endpoints, which is why this listing carries the NonFreeNet flag. Turn it off and no request is made. Internet blocking runs a local VPN that drops blocked apps' packets; it has no remote endpoint and logs nothing, though Android will still warn you that a VPN "can monitor network traffic" because that is what the API grants in general.
+One optional feature touches the network. Internet blocking runs a local VPN that drops blocked apps' packets; it has no remote endpoint and logs nothing, though Android will still warn you that a VPN "can monitor network traffic" because that is what the API grants in general.
 
 KNOWN LIMITS
 
