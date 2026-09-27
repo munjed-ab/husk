@@ -5,6 +5,7 @@ Arabic, and enough of a phone (dialer, media, notifications) that you rarely lea
 
 <img width="360" alt="Home screen with clock, quote, and shortcuts" src="docs/Screenshot_20260927-105722.jpeg" />
 <img width="360" alt="Home screen with media controls playing" src="docs/Screenshot_20260927-105729.jpeg" />
+<img width="360" alt="Home screen in the Classic font, with a notification count and media controls" src="docs/Screenshot_20260927-125211.jpeg" />
 
 
 Husk is a fork of [Olauncher](https://github.com/tanujnotes/Olauncher). It is a personal project
