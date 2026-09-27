@@ -12,6 +12,11 @@ Husk is a fork of [Olauncher](https://github.com/tanujnotes/Olauncher). It is a 
 built for my own phone first. It is published because it works well enough for me to use every day,
 not because it is a finished product. Read the [State](#state) section before you install it.
 
+A few friends tried it off my own phone and installed it on theirs on the spot. The font picker,
+the voice recorder and app shortcuts exist because they asked for them, thats why i decided to publish this.
+They use Husk as their daily launcher now, and the way they put it, is a
+distraction-free home screen that looks "Not bad"
+
 ## Features
 
 Everything listed here works on my device (Android 15). Anything that does not work is in
