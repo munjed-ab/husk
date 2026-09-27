@@ -11,17 +11,10 @@ import android.os.UserManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import androidx.work.BackoffPolicy
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import com.munjed.husk.data.AppModel
 import com.munjed.husk.data.Constants
 import com.munjed.husk.data.Prefs
 import com.munjed.husk.helper.SingleLiveEvent
-import com.munjed.husk.helper.ReadingWorker
 import com.munjed.husk.helper.formattedTimeSpent
 import com.munjed.husk.helper.getAppsList
 import com.munjed.husk.helper.getPrivateSpaceApps
@@ -34,7 +27,6 @@ import com.munjed.husk.helper.showToast
 import com.munjed.husk.helper.usageStats.EventLogWrapper
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -58,6 +50,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     // Suppress backToHomeScreen during Private Space lock/unlock auth
     var isPrivateSpaceToggling = false
+
+    // true while a system picker covers settings: onStop must not pop settings away under it, or the
+    // result has no fragment left to land in
+    var awaitingPicker = false
 
     val showDialog = SingleLiveEvent<String>()
     val checkForMessages = SingleLiveEvent<Unit?>()
@@ -105,6 +101,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             Constants.FLAG_SET_CLOCK_APP -> saveClockApp(appModel)
             Constants.FLAG_SET_CALENDAR_APP -> saveCalendarApp(appModel)
             Constants.FLAG_SET_SCREEN_TIME_APP -> saveScreenTimeApp(appModel)
+            Constants.FLAG_SET_MUSIC_APP -> saveMusicApp(appModel)
         }
     }
 
@@ -357,6 +354,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun saveMusicApp(appModel: AppModel) {
+        if (appModel is AppModel.App) {
+            prefs.musicAppName = appModel.appLabel
+            prefs.musicAppPackage = appModel.appPackage
+        }
+        updateSwipeApps()
+    }
+
     fun firstOpen(value: Boolean) {
         firstOpen.postValue(value)
     }
@@ -424,28 +429,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun isHuskDefault() {
         isHuskDefault.value = isHuskDefault(appContext)
-    }
-
-    fun setReadingWorker() {
-        val prefs = Prefs(appContext)
-        if (!prefs.readingEnabled || prefs.readingTopics.isEmpty()) {
-            WorkManager.getInstance(appContext).cancelUniqueWork(Constants.READING_WORKER_NAME)
-            return
-        }
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-        val request = PeriodicWorkRequestBuilder<ReadingWorker>(24, TimeUnit.HOURS)
-            .setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.HOURS)
-            .setConstraints(constraints)
-            .build()
-        WorkManager
-            .getInstance(appContext)
-            .enqueueUniquePeriodicWork(
-                Constants.READING_WORKER_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
-                request
-            )
     }
 
     fun updateHomeAlignment(gravity: Int) {

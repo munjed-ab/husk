@@ -1,10 +1,14 @@
 package com.munjed.husk.ui
 
 import android.app.ActivityOptions
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -17,6 +21,7 @@ import com.munjed.husk.databinding.AdapterSectionBinding
 import com.munjed.husk.helper.NotifItem
 import com.munjed.husk.helper.NotificationService
 import com.munjed.husk.helper.applyHomeBackground
+import com.munjed.husk.helper.inflateFallbackView
 import com.munjed.husk.helper.setScriptTypeface
 
 private sealed class NotifRow {
@@ -28,6 +33,12 @@ class NotificationsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityNotificationsBinding
     private val adapter = NotifAdapter { open(it) }
+
+    override fun onCreateView(parent: View?, name: String, context: Context, attrs: AttributeSet): View? {
+        val view = super.onCreateView(parent, name, context, attrs) ?: inflateFallbackView(context, name, attrs)
+        if (view is TextView) view.setScriptTypeface()
+        return view
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +66,7 @@ class NotificationsActivity : AppCompatActivity() {
         binding.clearAll.isVisible = rows.isNotEmpty()
     }
 
-    /** Fire the notification's own tap action, then clear it — same open-and-dismiss as the reading line. */
+    /** Fire the notification's own tap action, then clear it. */
     private fun open(notif: NotifItem) {
         if (!sendContentIntent(notif) && !launchApp(notif.packageName)) return
         NotificationService.dismiss(notif.key)

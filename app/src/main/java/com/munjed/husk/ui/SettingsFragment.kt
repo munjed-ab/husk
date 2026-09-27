@@ -1,10 +1,12 @@
 package com.munjed.husk.ui
 
+import android.Manifest
 import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
@@ -16,10 +18,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.munjed.husk.BuildConfig
@@ -29,8 +34,7 @@ import com.munjed.husk.R
 import com.munjed.husk.data.Constants
 import com.munjed.husk.data.Prefs
 import com.munjed.husk.databinding.FragmentSettingsBinding
-import androidx.lifecycle.lifecycleScope
-import com.munjed.husk.helper.animateAlpha
+import com.munjed.husk.helper.RecorderService
 import com.munjed.husk.helper.appUsagePermissionGranted
 import com.munjed.husk.helper.getColorFromAttr
 import com.munjed.husk.helper.isAccessServiceEnabled
@@ -41,13 +45,11 @@ import com.munjed.husk.helper.isHuskDefault
 import com.munjed.husk.helper.isTablet
 import com.munjed.husk.helper.openAppInfo
 import com.munjed.husk.helper.openUrl
-import com.munjed.husk.helper.refreshReadingList
-import kotlinx.coroutines.launch
 import com.munjed.husk.helper.setPlainWallpaper
 import com.munjed.husk.helper.showToast
 import com.munjed.husk.listener.DeviceAdmin
 
-class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListener {
+class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
     private lateinit var prefs: Prefs
     private lateinit var viewModel: MainViewModel
@@ -57,7 +59,9 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
 
-    private val pickBackgroundImage = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+    // the system photo picker: the gallery, no storage permission, and Android 12 and older fall back
+    // to the document picker on their own
+    private val pickBackgroundImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri == null) return@registerForActivityResult
         try {
             // without this the uri dies with the process and the background goes blank on reboot
@@ -71,6 +75,16 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         if (prefs.homeBgType != Constants.HomeBackground.IMAGE)
             requireContext().showToast(getString(R.string.unable_to_load_image))
     }
+
+    private val recorderPermissions =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+            // the mic is the one that matters; a denied notification permission only hides the
+            // ongoing notification, it does not stop the recording
+            if (granted[Manifest.permission.RECORD_AUDIO] == false)
+                requireContext().showToast(R.string.recorder_needs_mic)
+            else
+                enableRecorder()
+        }
 
     private val vpnConsent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == Activity.RESULT_OK) showBlockedApps()
@@ -107,11 +121,14 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         populateAlignment()
         populateStatusBar()
         populateDateTime()
+        populateFontText()
         populateSwipeApps()
+        populateMusicApp()
         populateSwipeDownAction()
         populateOrientation()
-        populateReading()
+        populateQuotes()
         populateNotifyLine()
+        populateRecorder()
         populateActionHints()
         initClickListeners()
         initObservers()
@@ -121,6 +138,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.appsNumSelectLayout.visibility = View.GONE
         binding.dateTimeSelectLayout.visibility = View.GONE
         binding.appThemeSelectLayout.visibility = View.GONE
+        binding.fontSelectLayout.visibility = View.GONE
         binding.swipeDownSelectLayout.visibility = View.GONE
         if (view.id != R.id.orientation) binding.orientationSelectLayout.visibility = View.GONE
         if (view.id != R.id.textSizeMinus && view.id != R.id.textSizePlus) {
@@ -160,11 +178,19 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             R.id.backgroundWallpaper -> updateBackground(Constants.HomeBackground.WALLPAPER)
             R.id.backgroundColor -> updateBackground(Constants.HomeBackground.COLOR)
             R.id.backgroundGradient -> updateBackground(Constants.HomeBackground.GRADIENT)
-            R.id.backgroundImage -> pickBackgroundImage.launch(arrayOf("image/*"))
+            R.id.backgroundImage -> {
+                viewModel.awaitingPicker = true
+                pickBackgroundImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }
             R.id.appThemeText -> binding.appThemeSelectLayout.visibility = View.VISIBLE
             R.id.themeLight -> updateTheme(AppCompatDelegate.MODE_NIGHT_NO)
             R.id.themeDark -> updateTheme(AppCompatDelegate.MODE_NIGHT_YES)
             R.id.themeSystem -> updateTheme(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+            R.id.fontText -> binding.fontSelectLayout.visibility = View.VISIBLE
+            R.id.fontPixel -> updateFont(Constants.Font.PIXEL)
+            R.id.fontSans -> updateFont(Constants.Font.SANS)
+            R.id.fontSerif -> updateFont(Constants.Font.SERIF)
+            R.id.fontHandwritten -> updateFont(Constants.Font.HANDWRITTEN)
             R.id.textSizeValue -> binding.textSizesLayout.visibility = View.VISIBLE
             R.id.actionAccessibility -> openAccessibilityService()
             R.id.closeAccessibility -> toggleAccessibilityVisibility(false)
@@ -187,6 +213,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
 
             R.id.swipeLeftApp -> showAppListIfEnabled(Constants.FLAG_SET_SWIPE_LEFT_APP)
             R.id.swipeRightApp -> showAppListIfEnabled(Constants.FLAG_SET_SWIPE_RIGHT_APP)
+            R.id.musicApp -> showAppListIfEnabled(Constants.FLAG_SET_MUSIC_APP)
             R.id.swipeDownAction -> binding.swipeDownSelectLayout.visibility = View.VISIBLE
             R.id.notifications -> updateSwipeDownAction(Constants.SwipeDownAction.NOTIFICATIONS)
             R.id.search -> updateSwipeDownAction(Constants.SwipeDownAction.SEARCH)
@@ -196,16 +223,9 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             R.id.orientationPortrait -> updateOrientation(Constants.Orientation.PORTRAIT)
             R.id.orientationLandscape -> updateOrientation(Constants.Orientation.LANDSCAPE)
             R.id.notifyLineToggle -> toggleNotifyLine()
-            R.id.readingToggle -> toggleReading()
-            R.id.readingRefresh -> refreshReading()
-            R.id.readingTechnology -> toggleTopic(Constants.Topic.TECHNOLOGY)
-            R.id.readingPhilosophy -> toggleTopic(Constants.Topic.PHILOSOPHY)
-            R.id.readingScience -> toggleTopic(Constants.Topic.SCIENCE)
-            R.id.readingBusiness -> toggleTopic(Constants.Topic.BUSINESS)
-            R.id.readingCulture -> toggleTopic(Constants.Topic.CULTURE)
-            R.id.readingHealth -> toggleTopic(Constants.Topic.HEALTH)
-            R.id.readingLiterature -> toggleTopic(Constants.Topic.LITERATURE)
-            R.id.readingFaith -> toggleTopic(Constants.Topic.FAITH)
+            R.id.recorderToggle -> toggleRecorder()
+            R.id.openRecordings -> startActivity(Intent(requireContext(), RecordingsActivity::class.java))
+            R.id.quotesToggle -> toggleQuotes()
 
             R.id.aboutHusk -> {
                 prefs.aboutClicked = true
@@ -233,6 +253,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
 
             R.id.swipeLeftApp -> toggleSwipeLeft()
             R.id.swipeRightApp -> toggleSwipeRight()
+            R.id.musicApp -> resetMusicApp()
             R.id.toggleLock -> startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
         return true
@@ -263,6 +284,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.dateOnly.setOnClickListener(this)
         binding.swipeLeftApp.setOnClickListener(this)
         binding.swipeRightApp.setOnClickListener(this)
+        binding.musicApp.setOnClickListener(this)
         binding.swipeDownAction.setOnClickListener(this)
         binding.search.setOnClickListener(this)
         binding.notifications.setOnClickListener(this)
@@ -272,16 +294,9 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.orientationPortrait.setOnClickListener(this)
         binding.orientationLandscape.setOnClickListener(this)
         binding.notifyLineToggle.setOnClickListener(this)
-        binding.readingToggle.setOnClickListener(this)
-        binding.readingRefresh.setOnClickListener(this)
-        binding.readingTechnology.setOnClickListener(this)
-        binding.readingPhilosophy.setOnClickListener(this)
-        binding.readingScience.setOnClickListener(this)
-        binding.readingBusiness.setOnClickListener(this)
-        binding.readingCulture.setOnClickListener(this)
-        binding.readingHealth.setOnClickListener(this)
-        binding.readingLiterature.setOnClickListener(this)
-        binding.readingFaith.setOnClickListener(this)
+        binding.recorderToggle.setOnClickListener(this)
+        binding.openRecordings.setOnClickListener(this)
+        binding.quotesToggle.setOnClickListener(this)
         binding.backgroundText.setOnClickListener(this)
         binding.backgroundWallpaper.setOnClickListener(this)
         binding.backgroundColor.setOnClickListener(this)
@@ -291,6 +306,11 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.themeLight.setOnClickListener(this)
         binding.themeDark.setOnClickListener(this)
         binding.themeSystem.setOnClickListener(this)
+        binding.fontText.setOnClickListener(this)
+        binding.fontPixel.setOnClickListener(this)
+        binding.fontSans.setOnClickListener(this)
+        binding.fontSerif.setOnClickListener(this)
+        binding.fontHandwritten.setOnClickListener(this)
         binding.textSizeValue.setOnClickListener(this)
         binding.actionAccessibility.setOnClickListener(this)
         binding.closeAccessibility.setOnClickListener(this)
@@ -317,6 +337,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.backgroundText.setOnLongClickListener(this)
         binding.swipeLeftApp.setOnLongClickListener(this)
         binding.swipeRightApp.setOnLongClickListener(this)
+        binding.musicApp.setOnLongClickListener(this)
         binding.toggleLock.setOnLongClickListener(this)
     }
 
@@ -336,6 +357,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         }
         viewModel.updateSwipeApps.observe(viewLifecycleOwner) {
             populateSwipeApps()
+            populateMusicApp()
         }
     }
 
@@ -456,7 +478,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         if (isAccessServiceEnabled(requireContext()))
             binding.actionAccessibility.text = getString(R.string.disable)
         binding.accessibilityLayout.isVisible = show
-        binding.scrollView.animateAlpha(if (show) 0.5f else 1f)
+        binding.scrollView.alpha = if (show) 0.5f else 1f
     }
 
     private fun openAccessibilityService() {
@@ -560,6 +582,23 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             AppCompatDelegate.MODE_NIGHT_YES -> binding.appThemeText.text = getString(R.string.dark)
             AppCompatDelegate.MODE_NIGHT_NO -> binding.appThemeText.text = getString(R.string.light)
             else -> binding.appThemeText.text = getString(R.string.system_default)
+        }
+    }
+
+    // one pick covers both scripts: each Constants.Font pairs a Latin face with an Arabic face,
+    // applied everywhere by MainActivity's onCreateView hook, so this always needs a recreate
+    private fun updateFont(fontPair: Int) {
+        if (prefs.fontPair == fontPair) return
+        prefs.fontPair = fontPair
+        requireActivity().recreate()
+    }
+
+    private fun populateFontText() {
+        binding.fontText.text = when (prefs.fontPair) {
+            Constants.Font.SANS -> getString(R.string.font_sans)
+            Constants.Font.SERIF -> getString(R.string.font_serif)
+            Constants.Font.HANDWRITTEN -> getString(R.string.font_handwritten)
+            else -> getString(R.string.font_pixel)
         }
     }
 
@@ -708,56 +747,46 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         populateNotifyLine()
     }
 
-    private fun populateReading() {
-        val on = prefs.readingEnabled
-        binding.readingToggle.text = getString(if (on) R.string.on else R.string.off)
-        // topics only matter once the feature is on, so they stay hidden until then
-        binding.readingTopicsLayout.isVisible = on
-        val chosen = prefs.readingTopics
-        topicViews().forEach { (topicId, view) ->
-            view.text = getString(if (chosen.contains(topicId.toString())) R.string.on else R.string.off)
-        }
+    private fun populateRecorder() {
+        val on = prefs.recorderEnabled
+        binding.recorderToggle.text = getString(if (on) R.string.on else R.string.off)
+        binding.recorderHint.isVisible = on
     }
 
-    private fun topicViews() = mapOf(
-        Constants.Topic.TECHNOLOGY to binding.readingTechnology,
-        Constants.Topic.PHILOSOPHY to binding.readingPhilosophy,
-        Constants.Topic.SCIENCE to binding.readingScience,
-        Constants.Topic.BUSINESS to binding.readingBusiness,
-        Constants.Topic.CULTURE to binding.readingCulture,
-        Constants.Topic.HEALTH to binding.readingHealth,
-        Constants.Topic.LITERATURE to binding.readingLiterature,
-        Constants.Topic.FAITH to binding.readingFaith,
-    )
-
-    private fun toggleReading() {
-        prefs.readingEnabled = !prefs.readingEnabled
-        populateReading()
-        viewModel.setReadingWorker()
-        if (prefs.readingEnabled && prefs.readingTopics.isEmpty())
-            requireContext().showToast(R.string.pick_a_topic)
-        else if (prefs.readingEnabled) refreshReading()
-    }
-
-    private fun toggleTopic(topicId: Int) {
-        val topics = prefs.readingTopics.toMutableSet()
-        if (!topics.remove(topicId.toString())) topics.add(topicId.toString())
-        prefs.readingTopics = topics
-        populateReading()
-        viewModel.setReadingWorker()
-        if (topics.isNotEmpty()) refreshReading()
-    }
-
-    private fun refreshReading() {
-        if (prefs.readingTopics.isEmpty()) {
-            requireContext().showToast(R.string.pick_a_topic)
+    private fun toggleRecorder() {
+        if (prefs.recorderEnabled) {
+            // turning it off mid-recording has to stop the recording too, or the switch is a lie
+            if (RecorderService.isRecording) RecorderService.toggle(requireContext())
+            prefs.recorderEnabled = false
+            populateRecorder()
             return
         }
-        requireContext().showToast(R.string.refreshing)
-        viewLifecycleOwner.lifecycleScope.launch {
-            val count = refreshReadingList(requireContext().applicationContext)
-            if (count == 0) requireContext().showToast(R.string.nothing_to_read)
+        val needed = mutableListOf(Manifest.permission.RECORD_AUDIO)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            needed.add(Manifest.permission.POST_NOTIFICATIONS)
+        val missing = needed.filter {
+            ContextCompat.checkSelfPermission(requireContext(), it) != PackageManager.PERMISSION_GRANTED
         }
+        if (missing.isEmpty()) enableRecorder() else recorderPermissions.launch(missing.toTypedArray())
+    }
+
+    private fun enableRecorder() {
+        prefs.recorderEnabled = true
+        populateRecorder()
+        // the tile works either way; the volume chord rides on the accessibility service
+        if (!isAccessServiceEnabled(requireContext())) {
+            requireContext().showToast(R.string.recorder_needs_accessibility, Toast.LENGTH_LONG)
+            runCatching { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+        }
+    }
+
+    private fun populateQuotes() {
+        binding.quotesToggle.text = getString(if (prefs.quotesEnabled) R.string.on else R.string.off)
+    }
+
+    private fun toggleQuotes() {
+        prefs.quotesEnabled = !prefs.quotesEnabled
+        populateQuotes()
     }
 
     private fun populateSwipeApps() {
@@ -767,6 +796,18 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             binding.swipeLeftApp.setTextColor(requireContext().getColorFromAttr(R.attr.primaryColorTrans50))
         if (!prefs.swipeRightEnabled)
             binding.swipeRightApp.setTextColor(requireContext().getColorFromAttr(R.attr.primaryColorTrans50))
+    }
+
+    private fun populateMusicApp() {
+        binding.musicApp.text = prefs.musicAppName.ifBlank { getString(R.string.auto) }
+    }
+
+    // long press resets to Auto: VLC when installed, otherwise the first other app publishing a
+    // media browser service, matching MediaControl's own fallback order
+    private fun resetMusicApp() {
+        prefs.musicAppName = ""
+        prefs.musicAppPackage = ""
+        populateMusicApp()
     }
 
 //    private fun populateDigitalWellbeing() {

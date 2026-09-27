@@ -4,7 +4,6 @@
     android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
     tools:context=".ui.HomeFragment">
 
     <FrameLayout
@@ -116,18 +115,18 @@
                 tools:text="4 new"
                 tools:visibility="visible" />
 
-            <!-- Substack article waiting to be read, see helper/Reading.kt -->
+            <!-- One line to sit with, from R.array.quotes. Tap for another. -->
             <TextView
-                android:id="@+id/readingLine"
+                android:id="@+id/quoteLine"
                 style="@style/TextSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:alpha="0.6"
                 android:ellipsize="end"
-                android:maxLines="2"
+                android:maxLines="3"
                 android:visibility="gone"
-                tools:text="Stoic Wisdoms - The discipline of assent"
+                tools:text="The feed is infinite. Your life isn't."
                 tools:visibility="visible" />
 
             <LinearLayout

@@ -49,6 +49,7 @@
     <string name="home_layout_alignment">App alignment</string>
     <string name="swipe_left_app">Swipe left app</string>
     <string name="swipe_right_app">Swipe right app</string>
+    <string name="music_app">Music app</string>
     <string name="_0">0</string>
     <string name="_1">1</string>
     <string name="_2">2</string>
@@ -72,6 +73,11 @@
     <string name="system_default">System</string>
     <string name="dark">Dark</string>
     <string name="light">Light</string>
+    <string name="font">Font</string>
+    <string name="font_pixel">Pixel</string>
+    <string name="font_sans">Modern</string>
+    <string name="font_serif">Classic</string>
+    <string name="font_handwritten">Handwritten</string>
     <string name="welcome_to_settings">Welcome to the settings!
         \n\nRemember, if you have any questions, our About page has the answer.</string>
     <!--    <string name="share_message">Your monthly reminder - you should use your phone, not the other way round. Stay strong. You\'re doing great!-->
@@ -132,22 +138,8 @@
     <string name="search_online">Search online</string>
     <string name="shortcuts">Shortcuts</string>
     <string name="orientation">Orientation</string>
-    <string name="reading">Reading</string>
-    <string name="reading_list">Substack articles</string>
-    <string name="topics">Topics</string>
-    <string name="refresh_now">Refresh now</string>
-    <string name="refreshing">Looking for something to read…</string>
-    <string name="nothing_to_read">Nothing new right now</string>
-    <string name="pick_a_topic">Pick a topic first</string>
-    <string name="article_line">%1$s \u00b7 %2$s</string>
-    <string name="topic_technology">Technology</string>
-    <string name="topic_philosophy">Philosophy</string>
-    <string name="topic_science">Science</string>
-    <string name="topic_business">Business</string>
-    <string name="topic_culture">Culture</string>
-    <string name="topic_health">Health</string>
-    <string name="topic_literature">Literature</string>
-    <string name="topic_faith">Faith</string>
+    <string name="quotes">Quotes</string>
+    <string name="quote_line">Quote on home</string>
     <string name="auto">Auto</string>
     <string name="portrait">Portrait</string>
     <string name="landscape">Landscape</string>
@@ -196,4 +188,22 @@
     <string name="cheers">Cheers!</string>
     <string name="notification_bar">Notification bar</string>
     <string name="private_space">Private space</string>
+    <string name="recorder">Recorder</string>
+    <string name="recordings">Recordings</string>
+    <string name="share">Share</string>
+    <string name="voice_recorder">Voice recorder</string>
+    <string name="recording">Recording</string>
+    <string name="recording_saved">Saved %s</string>
+    <string name="nothing_recorded">nothing recorded</string>
+    <string name="playing">%s · playing</string>
+    <string name="seek_back" translatable="false">-10s</string>
+    <string name="seek_forward" translatable="false">+10s</string>
+    <string name="stop">Stop</string>
+    <string name="delete_recording">Delete</string>
+    <string name="recorder_is_off">Turn the recorder on in Husk settings</string>
+    <string name="recorder_needs_mic">Husk needs microphone access to record</string>
+    <string name="recorder_failed">Recording failed</string>
+    <string name="recorder_blocked">Android blocked the recording. Use the quick settings tile.</string>
+    <string name="recorder_hint">Volume up and down together, or the Husk tile in quick settings. Android always shows a notification and the green mic dot while recording.</string>
+    <string name="recorder_needs_accessibility">Turn on Husk\'s accessibility service for the volume chord</string>
 </resources>

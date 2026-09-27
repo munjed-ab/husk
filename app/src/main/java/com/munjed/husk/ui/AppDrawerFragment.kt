@@ -10,17 +10,18 @@ import android.text.Spannable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Recycler
 import com.munjed.husk.MainViewModel
+import com.munjed.husk.MainActivity
 import com.munjed.husk.R
 import com.munjed.husk.data.AppModel
 import com.munjed.husk.data.Constants
@@ -29,8 +30,6 @@ import com.munjed.husk.databinding.FragmentAppDrawerBinding
 import com.munjed.husk.helper.deletePinnedShortcut
 import com.munjed.husk.helper.getAppShortcuts
 import com.munjed.husk.helper.hideKeyboard
-import com.munjed.husk.helper.isEinkDisplay
-import com.munjed.husk.helper.isSystemAnimationsDisabled
 import com.munjed.husk.helper.isSystemApp
 import com.munjed.husk.helper.openAppInfo
 import com.munjed.husk.helper.openSearch
@@ -44,7 +43,7 @@ import com.munjed.husk.helper.uninstall
 // row into a fallback face
 private const val BLOCKED_MARK = " OFF"
 
-class AppDrawerFragment : BaseFragment() {
+class AppDrawerFragment : Fragment() {
 
     private lateinit var prefs: Prefs
     private lateinit var adapter: AppDrawerAdapter
@@ -280,13 +279,13 @@ class AppDrawerFragment : BaseFragment() {
             }
         }
 
+        // hand rows back to the shared pool when the drawer closes, see MainActivity.appRowPool
+        linearLayoutManager.recycleChildrenOnDetach = true
+        binding.recyclerView.setRecycledViewPool((requireActivity() as MainActivity).appRowPool)
         binding.recyclerView.layoutManager = linearLayoutManager
         binding.recyclerView.adapter = adapter
         binding.recyclerView.addOnScrollListener(getRecyclerViewOnScrollListener())
         binding.recyclerView.itemAnimator = null
-        if (requireContext().isEinkDisplay().not() && requireContext().isSystemAnimationsDisabled().not())
-            binding.recyclerView.layoutAnimation =
-                AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_anim_from_bottom)
     }
 
     private fun initObservers() {

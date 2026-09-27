@@ -17,12 +17,10 @@ class Prefs(context: Context) {
     private val LOCK_MODE = "LOCK_MODE"
     private val HOME_APPS_NUM = "HOME_APPS_NUM"
     private val SCREEN_ORIENTATION = "SCREEN_ORIENTATION"
-    private val READING_ENABLED = "READING_ENABLED"
+    private val QUOTES_ENABLED = "QUOTES_ENABLED"
+    private val QUOTE_INDEX = "QUOTE_INDEX"
     private val NOTIFY_LINE_ENABLED = "NOTIFY_LINE_ENABLED"
-    private val READING_TOPICS = "READING_TOPICS"
-    private val READING_QUEUE = "READING_QUEUE"
-    private val READING_READ = "READING_READ"
-    private val READING_LAST_FETCH = "READING_LAST_FETCH"
+    private val RECORDER_ENABLED = "RECORDER_ENABLED"
     private val AUTO_SHOW_KEYBOARD = "AUTO_SHOW_KEYBOARD"
     private val KEYBOARD_MESSAGE = "KEYBOARD_MESSAGE"
     private val HOME_BG_TYPE = "HOME_BG_TYPE"
@@ -41,6 +39,7 @@ class Prefs(context: Context) {
     private val HIDDEN_APPS_UPDATED = "HIDDEN_APPS_UPDATED"
     private val SHOW_HINT_COUNTER = "SHOW_HINT_COUNTER"
     private val APP_THEME = "APP_THEME"
+    private val FONT_PAIR = "FONT_PAIR"
     private val ABOUT_CLICKED = "ABOUT_CLICKED"
     private val RATE_CLICKED = "RATE_CLICKED"
     private val SHARE_SHOWN_TIME = "SHARE_SHOWN_TIME"
@@ -49,7 +48,6 @@ class Prefs(context: Context) {
     private val PRO_MESSAGE_SHOWN = "PRO_MESSAGE_SHOWN"
     private val HIDE_SET_DEFAULT_LAUNCHER = "HIDE_SET_DEFAULT_LAUNCHER"
     private val SCREEN_TIME_LAST_UPDATED = "SCREEN_TIME_LAST_UPDATED"
-    private val LAUNCHER_RESTART_TIMESTAMP = "LAUNCHER_RECREATE_TIMESTAMP"
     private val SHOWN_ON_DAY_OF_YEAR = "SHOWN_ON_DAY_OF_YEAR"
     // Home button for recents feature disabled
     // private val HOME_BUTTON_SHOW_RECENTS = "HOME_BUTTON_SHOW_RECENTS"
@@ -104,6 +102,8 @@ class Prefs(context: Context) {
     private val SCREEN_TIME_APP_PACKAGE = "SCREEN_TIME_APP_PACKAGE"
     private val SCREEN_TIME_APP_USER = "SCREEN_TIME_APP_USER"
     private val SCREEN_TIME_APP_CLASS_NAME = "SCREEN_TIME_APP_CLASS_NAME"
+    private val MUSIC_APP_NAME = "MUSIC_APP_NAME"
+    private val MUSIC_APP_PACKAGE = "MUSIC_APP_PACKAGE"
 
     private val IS_SHORTCUT_1 = "IS_SHORTCUT_1"
     private val SHORTCUT_ID_1 = "SHORTCUT_ID_1"
@@ -209,6 +209,10 @@ class Prefs(context: Context) {
         get() = prefs.getInt(APP_THEME, AppCompatDelegate.MODE_NIGHT_YES)
         set(value) = prefs.edit { putInt(APP_THEME, value).apply() }
 
+    var fontPair: Int
+        get() = prefs.getInt(FONT_PAIR, Constants.Font.PIXEL)
+        set(value) = prefs.edit { putInt(FONT_PAIR, value).apply() }
+
     var textSizeScale: Float
         get() = prefs.getFloat(TEXT_SIZE_SCALE, 1.0f)
         set(value) = prefs.edit { putFloat(TEXT_SIZE_SCALE, value).apply() }
@@ -224,10 +228,6 @@ class Prefs(context: Context) {
     var screenTimeLastUpdated: Long
         get() = prefs.getLong(SCREEN_TIME_LAST_UPDATED, 0L)
         set(value) = prefs.edit { putLong(SCREEN_TIME_LAST_UPDATED, value).apply() }
-
-    var launcherRestartTimestamp: Long
-        get() = prefs.getLong(LAUNCHER_RESTART_TIMESTAMP, 0L)
-        set(value) = prefs.edit { putLong(LAUNCHER_RESTART_TIMESTAMP, value).apply() }
 
     var shownOnDayOfYear: Int
         get() = prefs.getInt(SHOWN_ON_DAY_OF_YEAR, 0)
@@ -258,30 +258,24 @@ class Prefs(context: Context) {
         get() = prefs.getInt(SCREEN_ORIENTATION, Constants.Orientation.PORTRAIT)
         set(value) = prefs.edit { putInt(SCREEN_ORIENTATION, value).apply() }
 
-    var readingEnabled: Boolean
-        get() = prefs.getBoolean(READING_ENABLED, false)
-        set(value) = prefs.edit { putBoolean(READING_ENABLED, value).apply() }
+    var quotesEnabled: Boolean
+        get() = prefs.getBoolean(QUOTES_ENABLED, true)
+        set(value) = prefs.edit { putBoolean(QUOTES_ENABLED, value).apply() }
+
+    // position in R.array.quotes, see nextQuote()
+    var quoteIndex: Int
+        get() = prefs.getInt(QUOTE_INDEX, 0)
+        set(value) = prefs.edit { putInt(QUOTE_INDEX, value).apply() }
 
     var notifyLineEnabled: Boolean
         get() = prefs.getBoolean(NOTIFY_LINE_ENABLED, false)
         set(value) = prefs.edit { putBoolean(NOTIFY_LINE_ENABLED, value).apply() }
 
-    // Substack category ids as strings, see Constants.Topic
-    var readingTopics: MutableSet<String>
-        get() = prefs.getStringSet(READING_TOPICS, mutableSetOf()) as MutableSet<String>
-        set(value) = prefs.edit { putStringSet(READING_TOPICS, value).apply() }
-
-    var readingQueueJson: String
-        get() = prefs.getString(READING_QUEUE, "").orEmpty()
-        set(value) = prefs.edit { putString(READING_QUEUE, value).apply() }
-
-    var readingRead: MutableSet<String>
-        get() = prefs.getStringSet(READING_READ, mutableSetOf()) as MutableSet<String>
-        set(value) = prefs.edit { putStringSet(READING_READ, value).apply() }
-
-    var readingLastFetch: Long
-        get() = prefs.getLong(READING_LAST_FETCH, 0L)
-        set(value) = prefs.edit { putLong(READING_LAST_FETCH, value).apply() }
+    // Off by default: the volume chord is always listening once the accessibility service is on, and
+    // a launcher that starts recording by surprise is worse than one that needs a switch flipped.
+    var recorderEnabled: Boolean
+        get() = prefs.getBoolean(RECORDER_ENABLED, false)
+        set(value) = prefs.edit { putBoolean(RECORDER_ENABLED, value).apply() }
 
     var hiddenAppsUpdated: Boolean
         get() = prefs.getBoolean(HIDDEN_APPS_UPDATED, false)
@@ -502,6 +496,15 @@ class Prefs(context: Context) {
     var screenTimeAppClassName: String?
         get() = prefs.getString(SCREEN_TIME_APP_CLASS_NAME, "").toString()
         set(value) = prefs.edit { putString(SCREEN_TIME_APP_CLASS_NAME, value).apply() }
+
+    // blank means Auto: MediaControl picks VLC, then any other player publishing a browser service
+    var musicAppName: String
+        get() = prefs.getString(MUSIC_APP_NAME, "").toString()
+        set(value) = prefs.edit { putString(MUSIC_APP_NAME, value).apply() }
+
+    var musicAppPackage: String
+        get() = prefs.getString(MUSIC_APP_PACKAGE, "").toString()
+        set(value) = prefs.edit { putString(MUSIC_APP_PACKAGE, value).apply() }
 
     var isShortcut1: Boolean
         get() = prefs.getBoolean(IS_SHORTCUT_1, false)

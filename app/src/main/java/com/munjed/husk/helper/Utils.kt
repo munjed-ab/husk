@@ -31,7 +31,6 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.WindowManager
-import android.view.animation.LinearInterpolator
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.AttrRes
@@ -65,19 +64,57 @@ fun Context.showToast(stringResource: Int, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, getString(stringResource), duration).show()
 }
 
-// ponytail: pixelify_sans has no Arabic glyphs, so Arabic silently falls back to the system font
-// and looks nothing like the rest of the UI. Pick the face per string instead of merging the two
-// font files. Handjet is the Arabic face: same pixel/modular construction as pixelify_sans.
+// pixelify_sans (and every other Latin face on offer) has no Arabic glyphs, so Arabic silently
+// falls back to the system font and looks nothing like the rest of the UI. Pick the face per
+// string instead of merging font files. Each Constants.Font pair names a Latin face and an Arabic
+// face chosen to sit together; the pair is themed in settings, not per script.
 // Call setScriptTypeface() wherever user data (contact names, app labels) is shown.
 private val arabicRegex = Regex("[\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF\\uFB50-\\uFDFF\\uFE70-\\uFEFF]")
-private var pixelFont: Typeface? = null
-private var arabicFont: Typeface? = null
+
+private fun latinFontRes(fontPair: Int) = when (fontPair) {
+    Constants.Font.SANS -> R.font.poppins
+    Constants.Font.SERIF -> R.font.pt_serif
+    Constants.Font.HANDWRITTEN -> R.font.patrick_hand
+    else -> R.font.pixelify_sans
+}
+
+private fun arabicFontRes(fontPair: Int) = when (fontPair) {
+    Constants.Font.SANS -> R.font.tajawal
+    Constants.Font.SERIF -> R.font.scheherazade_new
+    Constants.Font.HANDWRITTEN -> R.font.katibeh
+    else -> R.font.handjet_arabic
+}
+
+// cached by pair id: cheap to keep around, and a settings change always recreates the Activity
+private var cachedFontPair = -1
+private var cachedLatinTypeface: Typeface? = null
+private var cachedArabicTypeface: Typeface? = null
 
 fun TextView.setScriptTypeface() {
+    val fontPair = Prefs(context).fontPair
+    if (cachedFontPair != fontPair) {
+        cachedLatinTypeface = ResourcesCompat.getFont(context, latinFontRes(fontPair))
+        cachedArabicTypeface = ResourcesCompat.getFont(context, arabicFontRes(fontPair))
+        cachedFontPair = fontPair
+    }
     val arabic = arabicRegex.containsMatchIn(text)
-    if (pixelFont == null) pixelFont = ResourcesCompat.getFont(context, R.font.pixelify_sans)
-    if (arabic && arabicFont == null) arabicFont = ResourcesCompat.getFont(context, R.font.handjet_arabic)
-    typeface = (if (arabic) arabicFont else pixelFont) ?: return
+    typeface = (if (arabic) cachedArabicTypeface else cachedLatinTypeface) ?: return
+}
+
+// AppCompat's Activity.onCreateView() only re-creates its own known widget set (TextView, Button,
+// ...) and returns null for anything else, so a plain platform widget like TextClock never reaches
+// setScriptTypeface() through that hook. Replicate LayoutInflater's own fallback (an unqualified
+// tag is always android.widget.*) so the font hook still reaches it.
+// ponytail: covers android.widget.* only; add android.webkit./android.app. if a layout ever needs one.
+fun inflateFallbackView(context: Context, name: String, attrs: android.util.AttributeSet): View? {
+    if (name.contains('.')) return null
+    return try {
+        context.classLoader.loadClass("android.widget.$name")
+            .getConstructor(Context::class.java, android.util.AttributeSet::class.java)
+            .newInstance(context, attrs) as? View
+    } catch (e: Exception) {
+        null
+    }
 }
 
 suspend fun getAppsList(
@@ -512,15 +549,6 @@ fun Context.getColorFromAttr(
 ): Int {
     theme.resolveAttribute(attrColor, typedValue, resolveRefs)
     return typedValue.data
-}
-
-fun View.animateAlpha(alpha: Float = 1.0f) {
-    this.animate().apply {
-        interpolator = LinearInterpolator()
-        duration = 200
-        alpha(alpha)
-        start()
-    }
 }
 
 fun Context.deletePinnedShortcut(packageName: String, shortcutIdToDelete: String, user: UserHandle) {

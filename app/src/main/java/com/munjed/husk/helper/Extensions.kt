@@ -21,9 +21,11 @@ import android.view.inputmethod.InputMethodManager
 import androidx.annotation.RequiresApi
 import com.munjed.husk.BuildConfig
 import com.munjed.husk.R
+import com.munjed.husk.data.Prefs
 import com.munjed.husk.data.Constants
 import java.util.Calendar
 import java.util.Locale
+import kotlin.random.Random
 
 fun View.hideKeyboard() {
     this.clearFocus()
@@ -34,10 +36,10 @@ fun View.hideKeyboard() {
 fun View.showKeyboard(show: Boolean = true) {
     if (show.not()) return
     if (this.requestFocus())
-        postDelayed({
+        post {
             val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
-        }, 100)
+        }
 }
 
 
@@ -93,17 +95,6 @@ fun Context.isEinkDisplay(): Boolean {
     return try {
         val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.refreshRate <= Constants.MIN_ANIM_REFRESH_RATE
-    } catch (e: Exception) {
-        e.printStackTrace()
-        false
-    }
-}
-
-fun Context.isSystemAnimationsDisabled(): Boolean {
-    return try {
-        Settings.Global.getFloat(contentResolver, Settings.Global.WINDOW_ANIMATION_SCALE, 1f) == 0f
-                || Settings.Global.getFloat(contentResolver, Settings.Global.TRANSITION_ANIMATION_SCALE, 1f) == 0f
-                || Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
     } catch (e: Exception) {
         e.printStackTrace()
         false
@@ -173,12 +164,17 @@ fun Long.isDaySince(): Int = ((System.currentTimeMillis().convertEpochToMidnight
 fun Long.hasBeenDays(days: Int): Boolean =
     ((System.currentTimeMillis() - this) / Constants.ONE_DAY_IN_MILLIS) >= days
 
-fun Long.hasBeenHours(hours: Int): Boolean =
-    ((System.currentTimeMillis() - this) / Constants.ONE_HOUR_IN_MILLIS) >= hours
-
 fun Long.hasBeenMinutes(minutes: Int): Boolean =
     ((System.currentTimeMillis() - this) / Constants.ONE_MINUTE_IN_MILLIS) >= minutes
 
 fun Int.dpToPx(): Int {
     return (this * Resources.getSystem().displayMetrics.density).toInt()
 }
+
+/** Moves the home quote on to another one from R.array.quotes, never the one just shown. */
+fun Context.nextQuote(prefs: Prefs) {
+    prefs.quoteIndex = nextQuoteIndex(prefs.quoteIndex, resources.getStringArray(R.array.quotes).size)
+}
+
+fun nextQuoteIndex(current: Int, count: Int, random: Random = Random.Default): Int =
+    if (count < 2) 0 else (current.mod(count) + 1 + random.nextInt(count - 1)) % count

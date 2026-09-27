@@ -86,6 +86,7 @@
     <string name="home_layout_alignment">محاذاة التطبيق</string>
     <string name="swipe_left_app">افتح عند التمرير لليسار</string>
     <string name="swipe_right_app">افتح عند التمرير لليمين</string>
+    <string name="music_app">تطبيق الموسيقى</string>
     <string name="auto_show_keyboard">العرض التلقائي للوحة المفاتيح</string>
     <string name="hide">يخفي</string>
     <string name="status_bar">أظهر شريط الحالة</string>
@@ -97,6 +98,11 @@
     <string name="system_default">نظام</string>
     <string name="dark">مظلم</string>
     <string name="light">مضيء</string>
+    <string name="font">الخط</string>
+    <string name="font_pixel">Pixel</string>
+    <string name="font_sans">عصري</string>
+    <string name="font_serif">كلاسيكي</string>
+    <string name="font_handwritten">بخط اليد</string>
     <string name="welcome_to_settings">مرحبًا بك في الإعدادات!\n\nتذكر، إذا كان لديك أي سؤال، فإن صفحة "حول" لدينا تحتوي على الإجابة.</string>
     <string name="share_message">مرحبا، نحن بحاجة لمساعدتكم! في العام الماضي تجاوزنا مليون عملية تنزيل. نريد هذا العام أن نصل إلى مليون آخرين ولكن لا يمكننا القيام بذلك بمفردنا.
         \n\nهل تتفضل بمشاركة Husk مع أصدقائك، من فضلك؟ شكرا لك، ويوم رائع!</string>
@@ -170,19 +176,21 @@
     <string name="auto">تلقائي</string>
     <string name="portrait">عمودي</string>
     <string name="landscape">أفقي</string>
-    <string name="reading">القراءة</string>
-    <string name="reading_list">مقالات سبستاك</string>
-    <string name="topics">المواضيع</string>
-    <string name="refresh_now">تحديث الآن</string>
-    <string name="refreshing">جاري البحث عن مقال…</string>
-    <string name="nothing_to_read">لا جديد للقراءة</string>
-    <string name="pick_a_topic">اختر موضوعاً أولاً</string>
-    <string name="topic_technology">تقنية</string>
-    <string name="topic_philosophy">فلسفة</string>
-    <string name="topic_science">علوم</string>
-    <string name="topic_business">أعمال</string>
-    <string name="topic_culture">ثقافة</string>
-    <string name="topic_health">صحة</string>
-    <string name="topic_literature">أدب</string>
-    <string name="topic_faith">إيمان</string>
+    <string name="quotes">اقتباسات</string>
+    <string name="quote_line">اقتباس على الشاشة الرئيسية</string>
+    <string name="recorder">المسجّل</string>
+    <string name="recordings">التسجيلات</string>
+    <string name="voice_recorder">تسجيل صوتي</string>
+    <string name="recording">جاري التسجيل</string>
+    <string name="recording_saved">حُفظ %s</string>
+    <string name="nothing_recorded">لا تسجيلات</string>
+    <string name="playing">%s · قيد التشغيل</string>
+    <string name="stop">إيقاف</string>
+    <string name="delete_recording">حذف</string>
+    <string name="recorder_is_off">فعّل المسجّل من إعدادات Husk</string>
+    <string name="recorder_needs_mic">يحتاج Husk إذن الميكروفون للتسجيل</string>
+    <string name="recorder_failed">تعذّر التسجيل</string>
+    <string name="recorder_blocked">منع النظام التسجيل. استخدم مربّع الإعدادات السريعة.</string>
+    <string name="recorder_hint">اضغط زرَّي الصوت معاً، أو استخدم مربّع Husk في الإعدادات السريعة. يُظهر النظام إشعاراً ونقطة الميكروفون الخضراء طوال التسجيل.</string>
+    <string name="recorder_needs_accessibility">فعّل خدمة الوصول لـ Husk ليعمل اختصار أزرار الصوت</string>
 </resources>

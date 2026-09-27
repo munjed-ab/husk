@@ -35,18 +35,6 @@ object Constants {
     const val RECENT_APPS_COUNT = 4
     const val LOW_BATTERY_PERCENT = 15
 
-    // Substack category ids, from https://substack.com/api/v1/categories
-    object Topic {
-        const val TECHNOLOGY = 4
-        const val PHILOSOPHY = 114
-        const val SCIENCE = 134
-        const val BUSINESS = 62
-        const val CULTURE = 96
-        const val HEALTH = 355
-        const val LITERATURE = 339
-        const val FAITH = 223
-    }
-
     object Orientation {
         const val AUTO = 0
         const val PORTRAIT = 1
@@ -64,6 +52,14 @@ object Constants {
         const val COLOR = 1
         const val GRADIENT = 2
         const val IMAGE = 3
+    }
+
+    // each pairs one Latin face with an Arabic face, picked by script wherever text is shown
+    object Font {
+        const val PIXEL = 0
+        const val SANS = 1
+        const val SERIF = 2
+        const val HANDWRITTEN = 3
     }
 
     object CharacterIndicator {
@@ -101,13 +97,13 @@ object Constants {
     const val FLAG_SET_CLOCK_APP = 13
     const val FLAG_SET_CALENDAR_APP = 14
     const val FLAG_SET_SCREEN_TIME_APP = 15
+    const val FLAG_SET_MUSIC_APP = 16
 
     const val REQUEST_CODE_ENABLE_ADMIN = 666
     const val REQUEST_CODE_LAUNCHER_SELECTOR = 678
 
     const val HINT_RATE_US = 15
 
-    const val LONG_PRESS_DELAY_MS = 500L
     const val ONE_DAY_IN_MILLIS = 86400000L
     const val ONE_HOUR_IN_MILLIS = 3600000L
     const val ONE_MINUTE_IN_MILLIS = 60000L
@@ -124,5 +120,4 @@ object Constants {
     const val DIGITAL_WELLBEING_ACTIVITY = "com.google.android.apps.wellbeing.settings.TopLevelSettingsActivity"
     const val DIGITAL_WELLBEING_SAMSUNG_PACKAGE_NAME = "com.samsung.android.forest"
     const val DIGITAL_WELLBEING_SAMSUNG_ACTIVITY = "com.samsung.android.forest.launcher.LauncherActivity"
-    const val READING_WORKER_NAME = "READING_WORKER_NAME"
 }

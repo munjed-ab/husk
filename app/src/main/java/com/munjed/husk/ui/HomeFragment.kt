@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -38,11 +39,8 @@ import com.munjed.husk.helper.NotificationService
 import com.munjed.husk.helper.expandNotificationDrawer
 import com.munjed.husk.helper.getChangedAppTheme
 import com.munjed.husk.helper.getUserHandleFromString
-import com.munjed.husk.helper.Article
 import com.munjed.husk.helper.MediaControl
-import com.munjed.husk.helper.markArticleRead
-import com.munjed.husk.helper.readingQueue
-import com.munjed.husk.helper.refreshReadingList
+import com.munjed.husk.helper.nextQuote
 import com.munjed.husk.helper.isPackageInstalled
 import com.munjed.husk.helper.setScriptTypeface
 import com.munjed.husk.helper.openAlarmApp
@@ -50,9 +48,6 @@ import com.munjed.husk.helper.openCalendar
 import com.munjed.husk.helper.openCameraApp
 import com.munjed.husk.helper.openDialerApp
 import com.munjed.husk.helper.openSearch
-import com.munjed.husk.helper.openUrl
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
 import com.munjed.husk.helper.showToast
 import com.munjed.husk.listener.OnSwipeTouchListener
 import com.munjed.husk.listener.ViewSwipeTouchListener
@@ -60,14 +55,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListener {
+class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
     private lateinit var prefs: Prefs
     private lateinit var viewModel: MainViewModel
     private lateinit var deviceManager: DevicePolicyManager
 
     private val mediaControl by lazy { MediaControl(requireContext().applicationContext) }
-    private var currentArticle: Article? = null
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
@@ -89,7 +83,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         initObservers()
         initMediaControls()
         initNotifyLine()
-        initReadingLine()
+        initQuoteLine()
         setHomeAlignment(prefs.homeAlignment)
         initSwipeTouchListener()
         initClickListeners()
@@ -98,7 +92,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
     override fun onResume() {
         super.onResume()
         binding.mediaControls.isVisible = mediaControl.hasPlayer()
-        populateReadingLine()
+        populateQuoteLine()
         mediaControl.connect()
         populateHomeScreen(false)
         populateBlockerStatus()
@@ -286,7 +280,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         binding.homeApp6.gravity = horizontalGravity
         binding.homeApp7.gravity = horizontalGravity
         binding.homeApp8.gravity = horizontalGravity
-        binding.readingLine.gravity = horizontalGravity
+        binding.quoteLine.gravity = horizontalGravity
         binding.notifyLine.gravity = horizontalGravity
     }
 
@@ -713,7 +707,8 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
             true
         }
         binding.mediaTitle.setOnClickListener {
-            startActivity(requireContext().packageManager.getLaunchIntentForPackage("org.videolan.vlc") ?: return@setOnClickListener)
+            val pkg = mediaControl.targetPackage ?: return@setOnClickListener
+            startActivity(requireContext().packageManager.getLaunchIntentForPackage(pkg) ?: return@setOnClickListener)
         }
     }
 
@@ -733,41 +728,23 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         binding.notifyLine.setScriptTypeface()
     }
 
-    private fun initReadingLine() {
-        binding.readingLine.setOnClickListener {
-            val article = currentArticle ?: return@setOnClickListener
-            prefs.markArticleRead(article)
-            requireContext().openUrl(article.url)
-            populateReadingLine()
-        }
-        // long press puts it aside without opening, and tops the queue up when it runs dry
-        binding.readingLine.setOnLongClickListener {
-            val article = currentArticle ?: return@setOnLongClickListener true
-            prefs.markArticleRead(article)
-            populateReadingLine()
-            if (prefs.readingQueue().isEmpty()) {
-                requireContext().showToast(R.string.refreshing)
-                viewLifecycleOwner.lifecycleScope.launch {
-                    refreshReadingList(requireContext().applicationContext)
-                    populateReadingLine()
-                }
-            }
-            true
+    private fun initQuoteLine() {
+        // there is always another one
+        binding.quoteLine.setOnClickListener {
+            requireContext().nextQuote(prefs)
+            populateQuoteLine()
         }
     }
 
-    private fun populateReadingLine() {
-        currentArticle = if (prefs.readingEnabled) prefs.readingQueue().firstOrNull() else null
-        val article = currentArticle
-        binding.readingLine.isVisible = article != null
-        if (article == null) return
+    private fun populateQuoteLine() {
+        binding.quoteLine.isVisible = prefs.quotesEnabled
+        if (!prefs.quotesEnabled) return
+        val quotes = resources.getStringArray(R.array.quotes)
         // landscape has no room for a second line above the grid
-        binding.readingLine.maxLines =
-            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 1 else 2
-        binding.readingLine.text =
-            if (article.publication.isBlank()) article.title
-            else getString(R.string.article_line, article.publication, article.title)
-        binding.readingLine.setScriptTypeface()
+        binding.quoteLine.maxLines =
+            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 1 else 3
+        binding.quoteLine.text = quotes[prefs.quoteIndex.mod(quotes.size)]
+        binding.quoteLine.setScriptTypeface()
     }
 
     private fun showLongPressToast() = requireContext().showToast(getString(R.string.long_press_to_select_app))

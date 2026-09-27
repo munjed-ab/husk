@@ -11,8 +11,10 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.AttributeSet
 import android.view.View
 import android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -20,25 +22,29 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.munjed.husk.data.Constants
 import com.munjed.husk.data.Prefs
 import com.munjed.husk.databinding.ActivityMainBinding
 import com.munjed.husk.helper.applyHomeBackground
 import com.munjed.husk.helper.getColorFromAttr
 import com.munjed.husk.helper.hasBeenDays
-import com.munjed.husk.helper.hasBeenHours
 import com.munjed.husk.helper.hasBeenMinutes
 import com.munjed.husk.helper.isDarkThemeOn
 import com.munjed.husk.helper.isDaySince
 import com.munjed.husk.helper.isDefaultLauncher
 import com.munjed.husk.helper.isEinkDisplay
 import com.munjed.husk.helper.isHuskDefault
+import com.munjed.husk.helper.nextQuote
 import com.munjed.husk.helper.isTablet
 import com.munjed.husk.helper.openUrl
+import com.munjed.husk.helper.inflateFallbackView
 import com.munjed.husk.helper.resetLauncherViaFakeActivity
+import com.munjed.husk.helper.setScriptTypeface
 import com.munjed.husk.helper.showLauncherSelector
 import com.munjed.husk.helper.showToast
 import com.munjed.husk.helper.syncAppBlocker
+import com.munjed.husk.ui.AppDrawerAdapter
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -54,6 +60,12 @@ class MainActivity : AppCompatActivity() {
     private var isResumed = false
     private var profileReceiver: BroadcastReceiver? = null
 
+    // Outlives each drawer visit, so app rows are inflated once instead of on every swipe up.
+    // Lives here and not in the ViewModel: rows hold this activity's themed context.
+    val appRowPool = RecyclerView.RecycledViewPool().apply {
+        setMaxRecycledViews(AppDrawerAdapter.VIEW_TYPE_APP, 40)
+    }
+
 //    override fun onBackPressed() {
 //        if (navController.currentDestination?.id != R.id.mainFragment)
 //            super.onBackPressed()
@@ -64,6 +76,14 @@ class MainActivity : AppCompatActivity() {
         newConfig.fontScale = Prefs(context).textSizeScale
         applyOverrideConfiguration(newConfig)
         super.attachBaseContext(context)
+    }
+
+    // applies the chosen font pair to every TextView (and its subclasses) as it inflates, static
+    // strings included, so the picker in settings does not need a call site in every screen
+    override fun onCreateView(parent: View?, name: String, context: Context, attrs: AttributeSet): View? {
+        val view = super.onCreateView(parent, name, context, attrs) ?: inflateFallbackView(context, name, attrs)
+        if (view is TextView) view.setScriptTypeface()
+        return view
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,13 +148,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        restartLauncherOrCheckTheme()
+        // onStart, not onResume: a new quote per unlock or return from an app, not per drawer visit
+        nextQuote(prefs)
+        checkTheme()
     }
 
     override fun onResume() {
         super.onResume()
         isResumed = true
         viewModel.isPrivateSpaceToggling = false
+        viewModel.awaitingPicker = false
         refreshBackground()
     }
 
@@ -156,6 +179,7 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent?) {
         // Home button for recents feature disabled
         // val alreadyHome = navController.currentDestination?.id == R.id.mainFragment
+        viewModel.awaitingPicker = false // Home always means home, picker or not
         backToHomeScreen()
         // if (alreadyHome && isResumed && prefs.homeButtonShowRecents)
         //     viewModel.showRecentApps.call()
@@ -258,7 +282,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun backToHomeScreen() {
-        if (viewModel.isPrivateSpaceToggling) return
+        if (viewModel.isPrivateSpaceToggling || viewModel.awaitingPicker) return
         binding.messageLayout.visibility = View.GONE
         if (navController.currentDestination?.id != R.id.mainFragment)
             navController.popBackStack(R.id.mainFragment, false)
@@ -271,15 +295,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun restartLauncherOrCheckTheme(forceRestart: Boolean = false) {
-        if (forceRestart || prefs.launcherRestartTimestamp.hasBeenHours(4)) {
-            prefs.launcherRestartTimestamp = System.currentTimeMillis()
-            cacheDir.deleteRecursively()
-            recreate()
-        } else
-            checkTheme()
-    }
-
     private fun checkTheme() {
         timerJob?.cancel()
         timerJob = lifecycleScope.launch {
@@ -287,7 +302,7 @@ class MainActivity : AppCompatActivity() {
             if ((prefs.appTheme == AppCompatDelegate.MODE_NIGHT_YES && getColorFromAttr(R.attr.primaryColor) != getColor(R.color.white))
                 || (prefs.appTheme == AppCompatDelegate.MODE_NIGHT_NO && getColorFromAttr(R.attr.primaryColor) != getColor(R.color.black))
             )
-                restartLauncherOrCheckTheme(true)
+                recreate()
         }
     }
 

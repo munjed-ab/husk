@@ -2,6 +2,7 @@ package com.munjed.husk.ui
 
 import android.Manifest
 import android.content.ContentUris
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -14,9 +15,11 @@ import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.telephony.PhoneNumberUtils
 import android.telephony.TelephonyManager
 import android.text.format.DateUtils
+import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -33,6 +36,7 @@ import com.munjed.husk.databinding.AdapterContactBinding
 import com.munjed.husk.databinding.AdapterSectionBinding
 import com.munjed.husk.helper.applyHomeBackground
 import com.munjed.husk.helper.contactMatches
+import com.munjed.husk.helper.inflateFallbackView
 import com.munjed.husk.helper.normalizeName
 import com.munjed.husk.helper.openUrl
 import com.munjed.husk.helper.setScriptTypeface
@@ -72,7 +76,7 @@ class DialActivity : AppCompatActivity() {
     )
     private var all: List<Contact> = emptyList()
     private var recent: List<Contact> = emptyList()
-    private val searchField by lazy { binding.search.findViewById<android.widget.TextView>(androidx.appcompat.R.id.search_src_text) }
+    private val searchField by lazy { binding.search.findViewById<TextView>(androidx.appcompat.R.id.search_src_text) }
 
     // asked together on open, so the first tap on a contact dials straight out
     private val ask = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
@@ -81,6 +85,12 @@ class DialActivity : AppCompatActivity() {
             showToast(getString(R.string.contacts_permission_needed))
             finish()
         }
+    }
+
+    override fun onCreateView(parent: View?, name: String, context: Context, attrs: AttributeSet): View? {
+        val view = super.onCreateView(parent, name, context, attrs) ?: inflateFallbackView(context, name, attrs)
+        if (view is TextView) view.setScriptTypeface()
+        return view
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
