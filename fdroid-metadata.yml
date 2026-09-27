@@ -14,12 +14,6 @@ SourceCode: https://github.com/munjed-ab/husk
 IssueTracker: https://github.com/munjed-ab/husk/issues
 Changelog: https://github.com/munjed-ab/husk/releases
 
-# The reading list queries Substack's public API and RSS feeds, a third-party
-# service. It is optional and off until the user picks a topic.
-AntiFeatures:
-  NonFreeNet:
-    en-US: The optional reading list fetches articles from Substack's public API.
-
 RepoType: git
 Repo: https://github.com/munjed-ab/husk.git
 

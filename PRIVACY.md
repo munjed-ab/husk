@@ -25,22 +25,7 @@ All of it. Specifically:
 
 ## What leaves your device
 
-Two features make network requests. Both are optional and both are off until you turn them on.
-
-### Reading list
-
-If you pick at least one topic, Husk requests:
-
-1. `https://substack.com/api/v1/category/public/{id}/all` for the public topic leaderboard.
-2. The public RSS feed of each publication it picks from that leaderboard.
-
-These requests carry no account, no identifier and no personal data. They do carry a user agent
-string, `Mozilla/5.0 (Linux; Android) Husk`, and your IP address, which is unavoidable for any HTTP
-request. Substack is a third party with its own privacy policy, and this fork has no control over
-what they log.
-
-Note: this is the reason an F-Droid listing for Husk carries the NonFreeNet flag. Turn the reading
-list off and no request is ever made.
+One feature makes network requests. It is optional and off until you turn it on.
 
 ### Per-app internet blocking
 

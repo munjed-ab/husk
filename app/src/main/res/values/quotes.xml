@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shown one at a time on the home screen, see HomeFragment.populateQuoteLine(). Unattributed on
+     purpose: a misquoted famous name is worse than no name. Add a values-ar/quotes.xml to give
+     Arabic its own set. -->
+<resources>
+    <string-array name="quotes" translatable="false">
+        <item>You picked up your phone again. What were you hoping to find?</item>
+        <item>Nobody is coming to save you. That\'s the good news.</item>
+        <item>The life you keep postponing is the one you\'re living.</item>
+        <item>You\'re not behind. You\'re watching everyone else\'s highlight reel.</item>
+        <item>Discipline is just remembering what you want.</item>
+        <item>Your parents are getting older while you scroll.</item>
+        <item>Most of what you fear will never happen. Some of it already did, and you survived.</item>
+        <item>Comfort is a slow way to disappear.</item>
+        <item>You don\'t need more time. You need fewer distractions.</item>
+        <item>Be the person your younger self needed.</item>
+        <item>Tired of starting over? Stop quitting.</item>
+        <item>The people who love you don\'t need you to be impressive.</item>
+        <item>One day you\'ll wish you had called them back.</item>
+        <item>You can\'t hate yourself into someone you love.</item>
+        <item>The feed is infinite. Your life isn\'t.</item>
+        <item>Hard choices, easy life. Easy choices, hard life.</item>
+        <item>You already know what you should be doing.</item>
+        <item>Feelings are visitors. Let them come, let them go.</item>
+        <item>Nobody remembers your mistakes as much as you do.</item>
+        <item>Small steps still move you. Standing still doesn\'t.</item>
+        <item>Someone out there would trade everything for your ordinary day.</item>
+        <item>You are allowed to outgrow people.</item>
+        <item>Rest is not a reward. It\'s part of the work.</item>
+        <item>You are not your worst day.</item>
+        <item>Say the thing. Life is short and people are waiting.</item>
+        <item>If it costs you your peace, it\'s too expensive.</item>
+        <item>The version of you that wins is boring: sleep, water, work, repeat.</item>
+        <item>You are one decision away from a different year.</item>
+        <item>Stop waiting for motivation. It shows up after you start.</item>
+        <item>No one thinks about you as much as you fear. Be free.</item>
+        <item>Grief is love with nowhere to go.</item>
+        <item>Look up. This moment won\'t come again.</item>
+        <item>You won\'t find yourself in someone else\'s life.</item>
+        <item>Every expert was once a disaster.</item>
+        <item>What you do daily says more than what you\'ll do someday.</item>
+        <item>Silence is also an answer.</item>
+        <item>Some doors close so you stop knocking.</item>
+        <item>You\'re not lazy. You\'re scared. Start anyway.</item>
+        <item>Kindness costs nothing, and you still ration it.</item>
+        <item>Forgive yourself. You didn\'t know then what you know now.</item>
+        <item>Ten minutes of doing beats ten hours of planning.</item>
+        <item>They left. You stayed. That counts.</item>
+        <item>Nothing changes if nothing changes.</item>
+        <item>Same 24 hours as everyone. Where did today\'s go?</item>
+        <item>The dream doesn\'t care how you feel this morning.</item>
+        <item>Be gentle. Everyone is fighting something you can\'t see.</item>
+        <item>You\'re not too old. You\'re scared of being a beginner.</item>
+        <item>Loneliness is a message, not a verdict.</item>
+        <item>Your future self is watching. Give them something to thank you for.</item>
+        <item>Stop explaining yourself to people committed to misunderstanding you.</item>
+        <item>Breathe. You have survived every hard day so far.</item>
+        <item>Not every thought deserves your attention.</item>
+        <item>The mountain doesn\'t care about your excuses.</item>
+        <item>If today were the last, would it have been enough?</item>
+        <item>Love is a verb. Show up.</item>
+        <item>You can be grateful and still want more.</item>
+        <item>Pain is information. Suffering is the story you keep telling about it.</item>
+        <item>Don\'t trade what you want most for what you want now.</item>
+        <item>There is no later. There is only now, pretending.</item>
+        <item>Nobody on their deathbed wished for more screen time.</item>
+        <item>Whatever you\'re avoiding is where the growth is.</item>
+        <item>Being busy is not the same as being alive.</item>
+        <item>The people you ignore today become memories tomorrow.</item>
+        <item>You are the sum of your mornings.</item>
+        <item>It\'s okay to not be okay. It\'s not okay to live there.</item>
+        <item>Your worth isn\'t counted in likes.</item>
+        <item>Talk to yourself like someone you love.</item>
+        <item>Start before you\'re ready. Nobody ever is.</item>
+        <item>You keep asking for a sign. This is one.</item>
+        <item>Mercy for others starts with mercy for yourself.</item>
+        <item>Unfinished things weigh more than finished ones.</item>
+        <item>The world needs your work, not your worry.</item>
+        <item>Your mother\'s voice won\'t always be one call away.</item>
+        <item>The day already started. Are you in it?</item>
+        <item>Hope is a decision, not a feeling.</item>
+        <item>What would you do today if you weren\'t afraid?</item>
+        <item>Put this down. Go outside. The sky is free.</item>
+        <item>Every \"not now\" becomes \"never\" if you let it.</item>
+        <item>Don\'t spend today on things that don\'t love you back.</item>
+        <item>You are still here. Act like it matters, because it does.</item>
+    </string-array>
+</resources>
