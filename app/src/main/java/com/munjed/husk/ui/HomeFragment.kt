@@ -39,6 +39,7 @@ import com.munjed.husk.helper.NotificationService
 import com.munjed.husk.helper.expandNotificationDrawer
 import com.munjed.husk.helper.getChangedAppTheme
 import com.munjed.husk.helper.getUserHandleFromString
+import com.munjed.husk.helper.iconRes
 import com.munjed.husk.helper.MediaControl
 import com.munjed.husk.helper.nextQuote
 import com.munjed.husk.helper.isPackageInstalled
@@ -214,7 +215,10 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             populateDateTime()
         }
         viewModel.screenTimeValue.observe(viewLifecycleOwner) {
-            it?.let { binding.tvScreenTime.text = it }
+            it?.let {
+                binding.tvScreenTime.text = it
+                binding.tvScreenTime.setScriptTypeface()
+            }
         }
         // Home button for recents feature disabled
         // viewModel.showRecentApps.observe(viewLifecycleOwner) {
@@ -300,6 +304,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 dateText = getString(R.string.day_battery, dateText, battery)
         }
         binding.date.text = dateText.replace(".,", ",")
+        binding.date.setScriptTypeface()
         populateNextAlarm()
         populateBatteryState()
     }
@@ -312,6 +317,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         if (next == null) return
         val time = DateFormat.getTimeFormat(requireContext()).format(Date(next))
         binding.nextAlarm.text = getString(R.string.alarm_at, time)
+        binding.nextAlarm.setScriptTypeface()
     }
 
     /** Below the threshold the apps dim so the battery reading on the date line stands out. */
@@ -685,9 +691,15 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
         mediaControl.onPlayingChanged = { playing ->
             _binding?.mediaPlay?.setImageResource(
-                if (playing) R.drawable.ic_media_pause else R.drawable.ic_media_play
+                iconRes(
+                    requireContext(),
+                    if (playing) R.drawable.ic_media_pause else R.drawable.ic_media_play,
+                    if (playing) R.drawable.ic_media_pause_normal else R.drawable.ic_media_play_normal,
+                )
             )
         }
+        binding.mediaPrev.setImageResource(iconRes(requireContext(), R.drawable.ic_media_prev, R.drawable.ic_media_prev_normal))
+        binding.mediaNext.setImageResource(iconRes(requireContext(), R.drawable.ic_media_next, R.drawable.ic_media_next_normal))
         binding.mediaPrev.setOnClickListener { mediaControl.previous() }
         binding.mediaPlay.setOnClickListener { mediaControl.playPause() }
         binding.mediaNext.setOnClickListener { mediaControl.next() }

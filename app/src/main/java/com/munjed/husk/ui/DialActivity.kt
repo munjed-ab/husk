@@ -35,6 +35,7 @@ import com.munjed.husk.databinding.ActivityDialBinding
 import com.munjed.husk.databinding.AdapterContactBinding
 import com.munjed.husk.databinding.AdapterSectionBinding
 import com.munjed.husk.helper.applyHomeBackground
+import com.munjed.husk.helper.applyScriptTypefaceRecursively
 import com.munjed.husk.helper.contactMatches
 import com.munjed.husk.helper.inflateFallbackView
 import com.munjed.husk.helper.normalizeName
@@ -97,6 +98,7 @@ class DialActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityDialBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.applyScriptTypefaceRecursively()
         applyHomeBackground(binding.dialActivityLayout, binding.appBackground, Prefs(this))
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -405,11 +407,15 @@ private class ContactAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val row = rows[position]) {
-            is Row.Section -> (holder as SectionHolder).binding.sectionTitle.text = row.title
+            is Row.Section -> (holder as SectionHolder).binding.sectionTitle.apply {
+                text = row.title
+                setScriptTypeface()
+            }
             is Row.Person -> with((holder as PersonHolder).binding) {
                 contactName.text = row.contact.name
                 contactName.setScriptTypeface()
                 contactNumber.text = row.contact.subtitle
+                contactNumber.setScriptTypeface()
                 contactNumber.isVisible = row.contact.subtitle.isNotBlank()
                 // the strip replaces the row rather than sitting on top of it, otherwise the name
                 // and number read through from behind

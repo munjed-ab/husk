@@ -30,6 +30,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
@@ -102,20 +103,34 @@ fun TextView.setScriptTypeface() {
 }
 
 // AppCompat's Activity.onCreateView() only re-creates its own known widget set (TextView, Button,
-// ...) and returns null for anything else, so a plain platform widget like TextClock never reaches
-// setScriptTypeface() through that hook. Replicate LayoutInflater's own fallback (an unqualified
-// tag is always android.widget.*) so the font hook still reaches it.
-// ponytail: covers android.widget.* only; add android.webkit./android.app. if a layout ever needs one.
+// ...) and returns null for anything else, so a plain platform widget like TextClock, or a compound
+// widget's own internal views (SearchView's SearchAutoComplete EditText, inflated from its own XML
+// with a fully qualified tag), never reach setScriptTypeface() through that hook. Replicate
+// LayoutInflater's own fallback construction so the font hook still reaches them: an unqualified tag
+// is always android.widget.*, a qualified one (it has a package) is used as-is.
 fun inflateFallbackView(context: Context, name: String, attrs: android.util.AttributeSet): View? {
-    if (name.contains('.')) return null
+    val className = if (name.contains('.')) name else "android.widget.$name"
     return try {
-        context.classLoader.loadClass("android.widget.$name")
+        context.classLoader.loadClass(className)
             .getConstructor(Context::class.java, android.util.AttributeSet::class.java)
             .newInstance(context, attrs) as? View
     } catch (e: Exception) {
         null
     }
 }
+
+// belt-and-suspenders for the screen the user is looking at when they change the font: recreate()
+// refreshes every other screen next time it opens, but this repaints the current one immediately
+// instead of waiting on it.
+fun View.applyScriptTypefaceRecursively() {
+    if (this is TextView) setScriptTypeface()
+    if (this is ViewGroup) for (i in 0 until childCount) getChildAt(i).applyScriptTypefaceRecursively()
+}
+
+// the pixel icon set (play/pause/next/prev, info, share/delete/close) is hand-drawn blocky art to
+// match the pixel font; every other font pair gets the one shared, non-pixel version of each icon.
+fun iconRes(context: Context, pixelRes: Int, normalRes: Int): Int =
+    if (Prefs(context).fontPair == Constants.Font.PIXEL) pixelRes else normalRes
 
 suspend fun getAppsList(
     context: Context,

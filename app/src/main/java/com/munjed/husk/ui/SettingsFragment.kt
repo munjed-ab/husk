@@ -35,7 +35,9 @@ import com.munjed.husk.data.Constants
 import com.munjed.husk.data.Prefs
 import com.munjed.husk.databinding.FragmentSettingsBinding
 import com.munjed.husk.helper.RecorderService
+import com.munjed.husk.helper.applyScriptTypefaceRecursively
 import com.munjed.husk.helper.appUsagePermissionGranted
+import com.munjed.husk.helper.iconRes
 import com.munjed.husk.helper.getColorFromAttr
 import com.munjed.husk.helper.isAccessServiceEnabled
 import com.munjed.husk.helper.isNotificationAccessGranted
@@ -132,6 +134,10 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateActionHints()
         initClickListeners()
         initObservers()
+        binding.appInfo.setImageResource(iconRes(requireContext(), R.drawable.ic_info, R.drawable.ic_info_normal))
+        // belt-and-suspenders alongside MainActivity's onCreateView hook: guarantees this screen
+        // reflects the current font pair every time it opens, not just after a change made on it.
+        binding.root.applyScriptTypefaceRecursively()
     }
 
     override fun onClick(view: View) {
@@ -598,12 +604,17 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         }
     }
 
-    // one pick covers both scripts: each Constants.Font pairs a Latin face with an Arabic face,
-    // applied everywhere by MainActivity's onCreateView hook, so this always needs a recreate
+    // one pick covers both scripts: each Constants.Font pairs a Latin face with an Arabic face.
+    // Repaint this screen directly instead of requireActivity().recreate(): recreate() restores
+    // the current (non-start) destination through a different path than a plain navigate() call,
+    // and that path was not picking up the new font here. Every other screen is unaffected since
+    // it always gets a fresh onCreateView, and thus the current font, the next time it is opened.
     private fun updateFont(fontPair: Int) {
         if (prefs.fontPair == fontPair) return
         prefs.fontPair = fontPair
-        requireActivity().recreate()
+        binding.root.applyScriptTypefaceRecursively()
+        binding.appInfo.setImageResource(iconRes(requireContext(), R.drawable.ic_info, R.drawable.ic_info_normal))
+        populateActionHints()
     }
 
     private fun populateFontText() {
@@ -847,7 +858,9 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
     private fun populateActionHints() {
         if (prefs.aboutClicked.not())
-            binding.aboutHusk.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_info, 0)
+            binding.aboutHusk.setCompoundDrawablesWithIntrinsicBounds(
+                0, 0, iconRes(requireContext(), R.drawable.ic_info, R.drawable.ic_info_normal), 0
+            )
     }
 
 

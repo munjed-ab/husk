@@ -23,6 +23,7 @@ import com.munjed.husk.databinding.AdapterPrivateSpaceHeaderBinding
 import com.munjed.husk.databinding.AdapterSectionBinding
 import com.munjed.husk.helper.dpToPx
 import com.munjed.husk.helper.hideKeyboard
+import com.munjed.husk.helper.iconRes
 import com.munjed.husk.helper.isSystemApp
 import com.munjed.husk.helper.setScriptTypeface
 import com.munjed.husk.helper.showKeyboard
@@ -134,7 +135,10 @@ class AppDrawerAdapter(
                     )
                 }
 
-                is SectionViewHolder -> holder.binding.sectionTitle.text = (appModel as AppModel.SectionHeader).title
+                is SectionViewHolder -> holder.binding.sectionTitle.apply {
+                    text = (appModel as AppModel.SectionHeader).title
+                    setScriptTypeface()
+                }
 
                 is ViewHolder -> holder.bind(
                     flag,
@@ -422,6 +426,7 @@ class AppDrawerAdapter(
                     renameLayout.visibility = View.GONE
                 }
             }
+            appInfo.setCompoundDrawablesWithIntrinsicBounds(0, iconRes(appInfo.context, R.drawable.ic_info, R.drawable.ic_info_normal), 0, 0)
             appInfo.setOnClickListener { appInfoListener(appModel) }
             appDelete.setOnClickListener { appDeleteListener(appModel) }
             appMenuClose.setOnClickListener {

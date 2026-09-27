@@ -22,6 +22,8 @@ import com.munjed.husk.data.Prefs
 import com.munjed.husk.databinding.ActivityRecordingsBinding
 import com.munjed.husk.databinding.AdapterRecordingBinding
 import com.munjed.husk.helper.applyHomeBackground
+import com.munjed.husk.helper.applyScriptTypefaceRecursively
+import com.munjed.husk.helper.iconRes
 import com.munjed.husk.helper.inflateFallbackView
 import com.munjed.husk.helper.playbackTime
 import com.munjed.husk.helper.recordingSize
@@ -69,6 +71,7 @@ class RecordingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRecordingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.applyScriptTypefaceRecursively()
         applyHomeBackground(binding.recordingsActivityLayout, binding.appBackground, Prefs(this))
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -174,9 +177,13 @@ private class RecordingAdapter(
             val size = recordingSize(file.length())
             rowDetail.text =
                 if (isPlaying(file)) root.context.getString(R.string.playing, size) else size
+            rowDetail.setScriptTypeface()
             rowLayout.setOnClickListener { onClick(file) }
             rowLayout.setOnLongClickListener { showMenu(file); true }
             menu.isVisible = file == menuFile
+            menuShare.setCompoundDrawablesWithIntrinsicBounds(0, iconRes(root.context, R.drawable.ic_share, R.drawable.ic_share_normal), 0, 0)
+            menuDelete.setCompoundDrawablesWithIntrinsicBounds(0, iconRes(root.context, R.drawable.ic_delete, R.drawable.ic_delete_normal), 0, 0)
+            menuClose.setCompoundDrawablesWithIntrinsicBounds(0, iconRes(root.context, R.drawable.ic_close, R.drawable.ic_close_normal), 0, 0)
             menuShare.setOnClickListener { showMenu(null); onShare(file) }
             menuDelete.setOnClickListener { showMenu(null); onDelete(file) }
             menuClose.setOnClickListener { showMenu(null) }
@@ -212,7 +219,13 @@ private class RecordingAdapter(
         seek.max = mp.duration
         if (!seek.isPressed) seek.progress = mp.currentPosition // never yank the thumb from a finger
         time.text = timeLabel(mp.currentPosition, mp.duration)
-        pause.setImageResource(if (mp.isPlaying) R.drawable.ic_media_pause else R.drawable.ic_media_play)
+        pause.setImageResource(
+            iconRes(
+                pause.context,
+                if (mp.isPlaying) R.drawable.ic_media_pause else R.drawable.ic_media_play,
+                if (mp.isPlaying) R.drawable.ic_media_pause_normal else R.drawable.ic_media_play_normal,
+            )
+        )
     }
 
     private fun showMenu(file: File?) {

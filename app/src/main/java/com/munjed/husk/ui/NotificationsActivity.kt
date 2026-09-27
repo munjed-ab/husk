@@ -21,6 +21,7 @@ import com.munjed.husk.databinding.AdapterSectionBinding
 import com.munjed.husk.helper.NotifItem
 import com.munjed.husk.helper.NotificationService
 import com.munjed.husk.helper.applyHomeBackground
+import com.munjed.husk.helper.applyScriptTypefaceRecursively
 import com.munjed.husk.helper.inflateFallbackView
 import com.munjed.husk.helper.setScriptTypeface
 
@@ -44,6 +45,7 @@ class NotificationsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityNotificationsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.applyScriptTypefaceRecursively()
         applyHomeBackground(binding.notifyActivityLayout, binding.appBackground, Prefs(this))
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -134,11 +136,15 @@ private class NotifAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val row = rows[position]) {
-            is NotifRow.Header -> (holder as HeaderHolder).binding.sectionTitle.text = row.appLabel
+            is NotifRow.Header -> (holder as HeaderHolder).binding.sectionTitle.apply {
+                text = row.appLabel
+                setScriptTypeface()
+            }
             is NotifRow.Item -> with((holder as ItemHolder).binding) {
                 notifTitle.text = row.notif.title.ifBlank { row.notif.appLabel }
                 notifTitle.setScriptTypeface()
                 notifText.text = row.notif.text
+                notifText.setScriptTypeface()
                 notifText.isVisible = row.notif.text.isNotBlank()
                 notifRow.setOnClickListener { onClick(row.notif) }
             }
