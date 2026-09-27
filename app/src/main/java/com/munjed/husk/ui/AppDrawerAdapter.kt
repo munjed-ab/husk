@@ -289,6 +289,9 @@ class AppDrawerAdapter(
 
     class ViewHolder(private val binding: AdapterAppDrawerBinding) :
         RecyclerView.ViewHolder(binding.root) {
+        // one per holder: bind runs on every reuse, and stacking a new watcher each time leaks
+        private var renameWatcher: TextWatcher? = null
+
         fun bind(
             flag: Int,
             appLabelGravity: Int,
@@ -375,7 +378,8 @@ class AppDrawerAdapter(
             etAppRename.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
                 appTitle.visibility = if (hasFocus) View.INVISIBLE else View.VISIBLE
             }
-            etAppRename.addTextChangedListener(object : TextWatcher {
+            renameWatcher?.let(etAppRename::removeTextChangedListener)
+            renameWatcher = object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
                     etAppRename.hint = getAppName(etAppRename.context, appModel.appPackage, appModel.user)
                 }
@@ -391,7 +395,8 @@ class AppDrawerAdapter(
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     etAppRename.hint = ""
                 }
-            })
+            }
+            etAppRename.addTextChangedListener(renameWatcher)
             etAppRename.setOnEditorActionListener { _, actionCode, _ ->
                 if (actionCode == EditorInfo.IME_ACTION_DONE) {
                     val renameLabel = etAppRename.text.toString().trim()
